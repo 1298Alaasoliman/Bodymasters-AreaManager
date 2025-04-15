@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-tags me-2"></i>فئات المرافق</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('facilities.create_category') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> إضافة فئة جديدة
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>قائمة الفئات</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الفئة</th>
+                        <th>الوصف</th>
+                        <th>الترتيب</th>
+                        <th>عناصر الفحص</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ category.name }}</td>
+                        <td>{{ category.description or 'لا يوجد وصف' }}</td>
+                        <td>{{ category.order }}</td>
+                        <td>{{ category.check_items.count() }}</td>
+                        <td>
+                            {% if category.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                            {% else %}
+                            <span class="badge bg-secondary">غير نشط</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('facilities.edit_category', id=category.id) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ url_for('facilities.delete_category', id=category.id) }}" method="post" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirmDelete(event, 'هل أنت متأكد من حذف هذه الفئة؟')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">لا توجد فئات.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

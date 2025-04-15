@@ -1,0 +1,24 @@
+{
+  "name": "AreaManagerbag",
+  "description": "نظام إدارة نوادي BodyMasters",
+  "repository": "https://github.com/yourusername/AreaManagerbag",
+  "keywords": ["python", "flask", "sports", "management"],
+  "env": {
+    "SECRET_KEY": {
+      "description": "مفتاح سري للتطبيق",
+      "generator": "secret"
+    },
+    "FLASK_DEBUG": {
+      "description": "وضع التصحيح",
+      "value": "False"
+    }
+  },
+  "addons": [
+    "heroku-postgresql:hobby-dev"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}

@@ -1,0 +1,903 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    /* تنسيق الجدول */
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .schedule-table th, .schedule-table td {
+        border: 1px solid #dee2e6;
+        padding: 8px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .schedule-table th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    .schedule-table .day-header {
+        width: 90px; /* عرض أعمدة أيام الأسبوع */
+        min-width: 90px;
+        white-space: nowrap;
+        font-size: 0.9rem;
+    }
+
+    /* تصغير عرض عمود الرقم الوظيفي */
+    .employee-number-column {
+        width: 80px;
+    }
+
+    /* تكبير عرض عمود النادي */
+    .club-name-column {
+        width: 150px;
+    }
+
+    .schedule-table .check-cell {
+        width: 40px;
+        text-align: center;
+    }
+
+    .schedule-table .check-icon {
+        color: #28a745;
+        font-size: 18px;
+    }
+
+    .schedule-table .shift-time {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .schedule-card {
+        margin-bottom: 30px;
+    }
+
+    .schedule-card .card-header {
+        font-weight: bold;
+    }
+
+    /* تنسيق الموظفين غير النشطين */
+    .inactive-employee {
+        background-color: #f8f9fa;
+        opacity: 0.8;
+    }
+
+    /* تنسيق أزرار التبديل */
+    .btn-group .btn {
+        height: 38px; /* لجعل الارتفاع متساوي مع زر العودة */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* تصغير خط زر عرض الكل */
+    #show-all-btn {
+        min-width: 100px;
+        font-size: 0.85rem;
+    }
+
+    /* تصغير خط زر عرض النشطين فقط وزيادة عرضه */
+    #show-active-btn {
+        min-width: 140px;
+        font-size: 0.85rem;
+    }
+
+    .btn-group .btn.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    /* تنسيق زر العودة وزر الطباعة */
+    .btn-dark, .btn-success {
+        height: 38px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* تنسيقات الطباعة */
+    @media print {
+        body {
+            background-color: white;
+            font-size: 10pt; /* تصغير حجم الخط لتناسب المحتوى */
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .btn, .no-print, .navbar, .footer {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+
+        .card-header {
+            background-color: white !important;
+            color: black !important;
+            border-bottom: 2px solid #000 !important;
+            padding: 5px 0 !important;
+            font-size: 14pt !important;
+            text-align: center !important;
+        }
+
+        .table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            table-layout: fixed !important; /* تثبيت عرض الأعمدة */
+        }
+
+        .table th, .table td {
+            border: 1px solid #000 !important;
+            padding: 4px !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            font-size: 9pt !important;
+            text-align: center !important;
+        }
+
+        .table th {
+            background-color: #f0f0f0 !important;
+            font-weight: bold !important;
+        }
+
+        .inactive-employee {
+            background-color: #f0f0f0 !important;
+        }
+
+        .badge {
+            border: 1px solid #000 !important;
+            padding: 2px 5px !important;
+        }
+
+        /* تحديد عرض الأعمدة للطباعة */
+        .employee-number-column {
+            width: 40px !important;
+        }
+
+        .club-name-column {
+            display: none !important;
+        }
+
+        .day-header {
+            width: 90px !important;
+            min-width: 90px !important;
+            white-space: nowrap !important;
+            font-size: 0.85rem !important;
+        }
+
+        /* إظهار علامات أيام الدوام بشكل واضح */
+        .check-icon {
+            color: #28a745 !important;
+            font-weight: bold !important;
+            font-size: 16px !important;
+            visibility: visible !important;
+            display: inline-block !important;
+            width: 20px !important;
+            height: 20px !important;
+            line-height: 20px !important;
+        }
+
+        /* إخفاء عمود الإجراءات */
+        .table th:last-child, .table td:last-child {
+            display: none !important;
+        }
+
+        @page {
+            size: landscape; /* الطباعة بالعرض */
+            margin: 0.8cm;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-calendar-alt me-2"></i>جدول سير العمل {{ club.name }}</h4>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="d-flex justify-content-end">
+            <div class="btn-group me-2">
+                <button id="show-all-btn" class="btn btn-outline-primary active">عرض الكل</button>
+                <button id="show-active-btn" class="btn btn-outline-primary">عرض النشطين فقط</button>
+            </div>
+            <button id="print-schedules-btn" class="btn btn-success me-2">
+                <i class="fas fa-print me-1"></i> طباعة
+            </button>
+            <a href="{{ url_for('schedules.index') }}" class="btn btn-dark">
+                <i class="fas fa-arrow-right me-1"></i> العودة
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- جدول دوامات إدارة النادي -->
+<div class="card shadow schedule-card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i>إدارة النادي</h5>
+    </div>
+    <div class="card-body">
+        {% if admin_employees %}
+        <div class="table-responsive">
+            <table class="table table-bordered schedule-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="align-middle" style="width: 40px;">الرقم</th>
+                        <th rowspan="2" class="align-middle club-name-column d-none">النادي</th>
+                        <th rowspan="2" class="align-middle employee-number-column">الرقم الوظيفي</th>
+                        <th rowspan="2" class="align-middle">اسم الموظف</th>
+                        <th rowspan="2" class="align-middle">الدور الوظيفي</th>
+                        <th rowspan="2" class="align-middle">رقم الجوال</th>
+                        <th colspan="2" class="text-center">الفترة 1</th>
+                        <th colspan="2" class="text-center">الفترة 2</th>
+                        <th colspan="7" class="text-center">أيام التخصيص</th>
+                        <th rowspan="2" class="align-middle">الإجراءات</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center">من</th>
+                        <th class="text-center">إلى</th>
+                        <th class="text-center">من</th>
+                        <th class="text-center">إلى</th>
+                        <th class="day-header">السبت</th>
+                        <th class="day-header">الأحد</th>
+                        <th class="day-header">الإثنين</th>
+                        <th class="day-header">الثلاثاء</th>
+                        <th class="day-header">الأربعاء</th>
+                        <th class="day-header">الخميس</th>
+                        <th class="day-header">الجمعة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in admin_employees %}
+                    <tr{% if not employee.is_active %} class="inactive-employee"{% endif %}>
+                        <td>{{ loop.index }}</td>
+                        <td class="d-none">{{ club.name }}</td>
+                        <td>{{ employee.employee_number }}</td>
+                        <td>
+                            {{ employee.name }}
+                            {% if not employee.is_active %}
+                            <span class="badge bg-secondary ms-1">مجاز</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ employee.role }}</td>
+                        <td>{{ employee.phone or '-' }}</td>
+
+                        {% set schedule = admin_schedules.get(employee.id) %}
+
+                        <td>
+                            {% if schedule and schedule.shift1_start %}
+                            <span class="shift-time">{{ schedule.shift1_start.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift1_end %}
+                            <span class="shift-time">{{ schedule.shift1_end.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift2_start %}
+                            <span class="shift-time">{{ schedule.shift2_start.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift2_end %}
+                            <span class="shift-time">{{ schedule.shift2_end.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+
+                        <td class="check-cell">
+                            {% if schedule and schedule.saturday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.sunday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.monday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.tuesday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.wednesday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.thursday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.friday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a href="{{ url_for('schedules.employee_schedule', employee_id=employee.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            لا يوجد موظفين في إدارة النادي.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- جدول دوامات المدربين -->
+<div class="card shadow schedule-card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-dumbbell me-2"></i>المدربين</h5>
+    </div>
+    <div class="card-body">
+        {% if trainer_employees %}
+        <div class="table-responsive">
+            <table class="table table-bordered schedule-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="align-middle" style="width: 40px;">الرقم</th>
+                        <th rowspan="2" class="align-middle club-name-column d-none">النادي</th>
+                        <th rowspan="2" class="align-middle employee-number-column">الرقم الوظيفي</th>
+                        <th rowspan="2" class="align-middle">اسم الموظف</th>
+                        <th rowspan="2" class="align-middle">الدور الوظيفي</th>
+                        <th rowspan="2" class="align-middle">رقم الجوال</th>
+                        <th colspan="2" class="text-center">الفترة 1</th>
+                        <th colspan="2" class="text-center">الفترة 2</th>
+                        <th colspan="7" class="text-center">أيام التخصيص</th>
+                        <th rowspan="2" class="align-middle">الإجراءات</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center">من</th>
+                        <th class="text-center">إلى</th>
+                        <th class="text-center">من</th>
+                        <th class="text-center">إلى</th>
+                        <th class="day-header">السبت</th>
+                        <th class="day-header">الأحد</th>
+                        <th class="day-header">الإثنين</th>
+                        <th class="day-header">الثلاثاء</th>
+                        <th class="day-header">الأربعاء</th>
+                        <th class="day-header">الخميس</th>
+                        <th class="day-header">الجمعة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in trainer_employees %}
+                    <tr{% if not employee.is_active %} class="inactive-employee"{% endif %}>
+                        <td>{{ loop.index }}</td>
+                        <td class="d-none">{{ club.name }}</td>
+                        <td>{{ employee.employee_number }}</td>
+                        <td>
+                            {{ employee.name }}
+                            {% if not employee.is_active %}
+                            <span class="badge bg-secondary ms-1">مجاز</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ employee.role }}</td>
+                        <td>{{ employee.phone or '-' }}</td>
+
+                        {% set schedule = trainer_schedules.get(employee.id) %}
+
+                        <td>
+                            {% if schedule and schedule.shift1_start %}
+                            <span class="shift-time">{{ schedule.shift1_start.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift1_end %}
+                            <span class="shift-time">{{ schedule.shift1_end.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift2_start %}
+                            <span class="shift-time">{{ schedule.shift2_start.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift2_end %}
+                            <span class="shift-time">{{ schedule.shift2_end.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+
+                        <td class="check-cell">
+                            {% if schedule and schedule.saturday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.sunday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.monday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.tuesday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.wednesday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.thursday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.friday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a href="{{ url_for('schedules.employee_schedule', employee_id=employee.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            لا يوجد مدربين في هذا النادي.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- جدول دوامات العمال -->
+<div class="card shadow schedule-card">
+    <div class="card-header bg-warning text-white">
+        <h5 class="mb-0"><i class="fas fa-broom me-2"></i>العمال</h5>
+    </div>
+    <div class="card-body">
+        {% if worker_employees %}
+        <div class="table-responsive">
+            <table class="table table-bordered schedule-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="align-middle" style="width: 40px;">الرقم</th>
+                        <th rowspan="2" class="align-middle club-name-column d-none">النادي</th>
+                        <th rowspan="2" class="align-middle employee-number-column">الرقم الوظيفي</th>
+                        <th rowspan="2" class="align-middle">اسم الموظف</th>
+                        <th rowspan="2" class="align-middle">الدور الوظيفي</th>
+                        <th rowspan="2" class="align-middle">رقم الجوال</th>
+                        <th colspan="2" class="text-center">الفترة 1</th>
+                        <th colspan="2" class="text-center">الفترة 2</th>
+                        <th colspan="7" class="text-center">أيام التخصيص</th>
+                        <th rowspan="2" class="align-middle">الإجراءات</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center">من</th>
+                        <th class="text-center">إلى</th>
+                        <th class="text-center">من</th>
+                        <th class="text-center">إلى</th>
+                        <th class="day-header">السبت</th>
+                        <th class="day-header">الأحد</th>
+                        <th class="day-header">الإثنين</th>
+                        <th class="day-header">الثلاثاء</th>
+                        <th class="day-header">الأربعاء</th>
+                        <th class="day-header">الخميس</th>
+                        <th class="day-header">الجمعة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in worker_employees %}
+                    <tr{% if not employee.is_active %} class="inactive-employee"{% endif %}>
+                        <td>{{ loop.index }}</td>
+                        <td class="d-none">{{ club.name }}</td>
+                        <td>{{ employee.employee_number }}</td>
+                        <td>
+                            {{ employee.name }}
+                            {% if not employee.is_active %}
+                            <span class="badge bg-secondary ms-1">مجاز</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ employee.role }}</td>
+                        <td>{{ employee.phone or '-' }}</td>
+
+                        {% set schedule = worker_schedules.get(employee.id) %}
+
+                        <td>
+                            {% if schedule and schedule.shift1_start %}
+                            <span class="shift-time">{{ schedule.shift1_start.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift1_end %}
+                            <span class="shift-time">{{ schedule.shift1_end.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift2_start %}
+                            <span class="shift-time">{{ schedule.shift2_start.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if schedule and schedule.shift2_end %}
+                            <span class="shift-time">{{ schedule.shift2_end.strftime('%H:%M') }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+
+                        <td class="check-cell">
+                            {% if schedule and schedule.saturday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.sunday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.monday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.tuesday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.wednesday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.thursday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+                        <td class="check-cell">
+                            {% if schedule and schedule.friday %}
+                            <i class="fas fa-check-circle check-icon"></i>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a href="{{ url_for('schedules.employee_schedule', employee_id=employee.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            لا يوجد عمال في هذا النادي.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // الحصول على الأزرار
+        const showAllBtn = document.getElementById('show-all-btn');
+        const showActiveBtn = document.getElementById('show-active-btn');
+        const printBtn = document.getElementById('print-schedules-btn');
+        const excelBtn = document.getElementById('export-excel-btn');
+        const pdfBtn = document.getElementById('export-pdf-btn');
+
+        // الحصول على جميع صفوف الموظفين غير النشطين
+        const inactiveEmployeeRows = document.querySelectorAll('tr.inactive-employee');
+
+        // وظيفة لعرض جميع الموظفين
+        function showAllEmployees() {
+            inactiveEmployeeRows.forEach(row => {
+                row.style.display = '';
+            });
+
+            // تغيير حالة الأزرار
+            showAllBtn.classList.add('active');
+            showActiveBtn.classList.remove('active');
+        }
+
+        // وظيفة لعرض الموظفين النشطين فقط
+        function showActiveEmployees() {
+            inactiveEmployeeRows.forEach(row => {
+                row.style.display = 'none';
+            });
+
+            // تغيير حالة الأزرار
+            showActiveBtn.classList.add('active');
+            showAllBtn.classList.remove('active');
+        }
+
+        // وظيفة الطباعة
+        function printSchedules() {
+            // إظهار جميع الموظفين قبل التصدير
+            const currentDisplay = [];
+            inactiveEmployeeRows.forEach(row => {
+                currentDisplay.push(row.style.display);
+                row.style.display = '';
+            });
+
+            // إنشاء عنصر iframe مؤقت
+            const printFrame = document.createElement('iframe');
+            printFrame.style.display = 'none';
+            document.body.appendChild(printFrame);
+
+            // إنشاء محتوى HTML للطباعة
+            const printDocument = printFrame.contentWindow.document;
+            printDocument.open();
+
+            // إضافة النمط CSS للطباعة
+            printDocument.write(`
+                <!DOCTYPE html>
+                <html lang="ar" dir="rtl">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>جدول سير العمل - {{ club.name }}</title>
+                    <style>
+                        @page { size: landscape; margin: 0.8cm; }
+                        @media print {
+                            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                        }
+                        body { font-family: Cairo, Arial, sans-serif; font-size: 9pt; }
+                        h1, h2, h3 { text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
+                        th, td { border: 1px solid #000; padding: 2px; text-align: center; white-space: normal; word-wrap: break-word; font-size: 7pt; }
+                        th { background-color: #f0f0f0; font-weight: bold; }
+
+                        /* عرض الأعمدة عند الطباعة */
+                        th:nth-child(1), td:nth-child(1) { width: 30px; } /* الرقم */
+                        th:nth-child(2), td:nth-child(2) { display: none; } /* إخفاء عمود النادي */
+                        th:nth-child(3), td:nth-child(3) { width: 45px; } /* الرقم الوظيفي */
+                        th:nth-child(4), td:nth-child(4) { width: 120px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; } /* اسم الموظف */
+                        th:nth-child(5), td:nth-child(5) { width: 60px; max-width: 60px; } /* الدور الوظيفي */
+                        th:nth-child(6), td:nth-child(6) { width: 50px; max-width: 50px; } /* رقم الجوال */
+
+                        /* أوقات الدوام */
+                        th:nth-child(7), td:nth-child(7),
+                        th:nth-child(8), td:nth-child(8),
+                        th:nth-child(9), td:nth-child(9),
+                        th:nth-child(10), td:nth-child(10) { width: 35px; max-width: 35px; font-size: 8pt; }
+
+                        /* أيام الدوام */
+                        th:nth-child(11), td:nth-child(11) { width: 90px; min-width: 90px; white-space: nowrap; } /* السبت */
+                        th:nth-child(12), td:nth-child(12) { width: 90px; min-width: 90px; white-space: nowrap; } /* الأحد */
+                        th:nth-child(13), td:nth-child(13) { width: 90px; min-width: 90px; white-space: nowrap; } /* الإثنين */
+                        th:nth-child(14), td:nth-child(14) { width: 90px; min-width: 90px; white-space: nowrap; } /* الثلاثاء */
+                        th:nth-child(15), td:nth-child(15) { width: 90px; min-width: 90px; white-space: nowrap; } /* الأربعاء */
+                        th:nth-child(16), td:nth-child(16) { width: 90px; min-width: 90px; white-space: nowrap; } /* الخميس */
+                        th:nth-child(17), td:nth-child(17) { width: 90px; min-width: 90px; white-space: nowrap; } /* الجمعة */
+
+                        /* إخفاء العمودين الأخيرين (الإجراءات وأي عمود فارغ) */
+                        th:nth-child(18), td:nth-child(18),
+                        th:nth-child(19), td:nth-child(19) { display: none !important; }
+
+                        /* إظهار علامات أيام الدوام بشكل واضح */
+                        .check-mark {
+                            color: #28a745 !important;
+                            font-weight: bold !important;
+                            font-size: 12px !important;
+                            display: inline-block !important;
+                            width: 14px !important;
+                            height: 14px !important;
+                            line-height: 14px !important;
+                            visibility: visible !important;
+                            margin: 0 auto !important;
+                            text-align: center !important;
+                        }
+
+                        /* تنسيق خلايا التحقق */
+                        .check-cell {
+                            text-align: center !important;
+                            vertical-align: middle !important;
+                            padding: 2px !important;
+                        }
+                        .header { margin-bottom: 15px; }
+                        .section { margin-bottom: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>جدول سير العمل - {{ club.name }}</h1>
+                        <h3>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')}</h3>
+                    </div>
+            `);
+
+            // نسخ كل جدول إلى مستند الطباعة
+            const tables = document.querySelectorAll('.schedule-table');
+            tables.forEach((table, index) => {
+                const tableTitle = table.closest('.card').querySelector('.card-header').textContent.trim();
+
+                // نسخ الجدول وإجراء التعديلات اللازمة
+                let tableHTML = table.outerHTML;
+
+                // إظهار علامات أيام الدوام بشكل واضح
+                tableHTML = tableHTML
+                    .replace(/d-none/g, '')
+                    .replace(/class="align-middle"/g, 'class="align-middle" style="height: auto;"')
+                    .replace(/<i class="fas fa-check-circle check-icon"><\/i>/g, '<span class="check-mark">✓</span>')
+                    .replace(/<td class="check-cell">\s*<\/td>/g, '<td class="check-cell">-</td>')
+                    .replace(/<td class="check-cell">\s*\n\s*<\/td>/g, '<td class="check-cell">-</td>');
+
+                // إضافة علامات التحقق بشكل مباشر للتأكد من ظهورها
+                tableHTML = tableHTML.replace(/class="check-cell">/g, 'class="check-cell" style="text-align: center; vertical-align: middle; padding: 2px;">');
+
+                // إزالة العمودين الفارغين في نهاية الجدول
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = tableHTML;
+
+                // إزالة عمود الإجراءات فقط
+                const tempTable = tempDiv.querySelector('table');
+                if (tempTable) {
+                    // التأكد من وجود عمود الإجراءات قبل الحذف
+                    const headerRows = tempTable.querySelectorAll('thead tr');
+                    headerRows.forEach(row => {
+                        // نتأكد من أن العمود الأخير هو عمود الإجراءات
+                        const cells = row.querySelectorAll('th');
+                        if (cells.length > 0) {
+                            const lastCell = cells[cells.length - 1];
+                            if (lastCell && lastCell.textContent.trim() === 'الإجراءات') {
+                                row.removeChild(lastCell);
+                            }
+                        }
+                    });
+
+                    // إزالة عمود الإجراءات من صفوف البيانات
+                    const bodyRows = tempTable.querySelectorAll('tbody tr');
+                    bodyRows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length > 0) {
+                            const lastCell = cells[cells.length - 1];
+                            // نتأكد من أن العمود الأخير يحتوي على زر التعديل
+                            if (lastCell && lastCell.querySelector('.btn-primary')) {
+                                row.removeChild(lastCell);
+                            }
+                        }
+                    });
+
+                    // التأكد من وجود جميع أيام الأسبوع وعلامات الدوام
+                    const daysHeader = tempTable.querySelector('thead tr:nth-child(2)');
+                    if (daysHeader) {
+                        const dayHeaders = daysHeader.querySelectorAll('th');
+                        const dayNames = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+
+                        // التأكد من وجود جميع أيام الأسبوع
+                        let foundDays = [];
+                        dayHeaders.forEach(header => {
+                            const text = header.textContent.trim();
+                            if (dayNames.includes(text)) {
+                                foundDays.push(text);
+                            }
+                        });
+
+                        // التأكد من وجود جميع الأيام
+                        console.log('الأيام الموجودة:', foundDays.join(', '));
+                    }
+
+                    // التأكد من ظهور علامات أيام الدوام بشكل صحيح
+                    const checkCells = tempTable.querySelectorAll('.check-cell');
+                    checkCells.forEach(cell => {
+                        // إذا كانت الخلية فارغة، نضيف علامة '-'
+                        if (!cell.innerHTML.trim()) {
+                            cell.innerHTML = '-';
+                        }
+                        // إذا كانت تحتوي على علامة صح، نتأكد من ظهورها بشكل صحيح
+                        else if (cell.querySelector('.check-icon')) {
+                            cell.innerHTML = '<span class="check-mark">✓</span>';
+                        }
+                    });
+                }
+
+                printDocument.write(`
+                    <div class="section">
+                        <h2>${tableTitle}</h2>
+                        ${tempDiv.innerHTML}
+                    </div>
+                `);
+            });
+
+            printDocument.write(`
+                </body>
+                </html>
+            `);
+            printDocument.close();
+
+            // انتظار تحميل المستند
+            printFrame.onload = function() {
+                try {
+                    // طباعة المستند
+                    printFrame.contentWindow.print();
+
+                    // إزالة iframe بعد الطباعة
+                    setTimeout(() => {
+                        document.body.removeChild(printFrame);
+
+                        // إعادة حالة عرض الموظفين غير النشطين
+                        inactiveEmployeeRows.forEach((row, index) => {
+                            row.style.display = currentDisplay[index];
+                        });
+                    }, 1000);
+                } catch (e) {
+                    console.error('Error printing:', e);
+                    document.body.removeChild(printFrame);
+
+                    // إعادة حالة عرض الموظفين غير النشطين
+                    inactiveEmployeeRows.forEach((row, index) => {
+                        row.style.display = currentDisplay[index];
+                    });
+                }
+            };
+        }
+
+
+
+
+
+        // إضافة مستمعي الأحداث للأزرار
+        showAllBtn.addEventListener('click', showAllEmployees);
+        showActiveBtn.addEventListener('click', showActiveEmployees);
+        printBtn.addEventListener('click', printSchedules);
+
+        // عرض جميع الموظفين عند تحميل الصفحة (الوضع الافتراضي)
+        showAllEmployees();
+    });
+</script>
+{% endblock %}

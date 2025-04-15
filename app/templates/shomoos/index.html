@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12 mb-3 d-flex justify-content-between align-items-center">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="fas fa-plus"></i> إضافة سجل جديد
+            </button>
+
+            <!-- فلتر النادي -->
+            <div class="d-flex align-items-center">
+                <form method="GET" action="{{ url_for('shomoos.index') }}" class="d-flex align-items-center">
+                    <div class="input-group" style="width: auto;">
+                        <span class="input-group-text bg-warning text-dark" style="border-radius: 0;">
+                            <i class="fas fa-filter"></i> فلترة
+                        </span>
+                        <select class="form-select" name="club_id" id="filter_club_id" style="min-width: 200px; border-radius: 0;">
+                            <option value="">جميع النوادي</option>
+                            {% for club in clubs %}
+                            <option value="{{ club.id }}" {% if filter_club_id == club.id %}selected{% endif %}>{{ club.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if filter_club_id %}
+                        <a href="{{ url_for('shomoos.index') }}" class="btn btn-light" style="border: 1px solid #ced4da; border-radius: 0;">
+                            <i class="fas fa-times"></i> إلغاء الفلتر
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">سجلات شموس</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>النادي</th>
+                                    <th class="text-center">العدد الحالي</th>
+                                    <th class="text-center">الفارق</th>
+                                    <th class="text-center">تاريخ الإضافة</th>
+                                    <th class="text-center">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in records %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ record.club.name }}</td>
+                                    <td class="text-center">{{ record.new_number }}</td>
+                                    <td class="text-center">{{ record.previous_total }}</td>
+                                    <td class="text-center">{{ record.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('shomoos.edit', id=record.id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> تعديل
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="{{ record.id }}" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                            <i class="fas fa-trash"></i> حذف
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">لا توجد سجلات</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة إضافة سجل جديد -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalLabel">إضافة سجل شموس جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('shomoos.add') }}" id="add-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="club_id" class="form-label">النادي</label>
+                        <select class="form-select" id="club_id" name="club_id" required>
+                            <option value="">اختر--</option>
+                            {% for club in clubs %}
+                            {% if current_user.role == 'admin' or current_user.has_club_access(club.id) %}
+                            <option value="{{ club.id }}">{{ club.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="current_number" class="form-label">العدد الحالي بنظام شموس</label>
+                        <input type="number" class="form-control text-center" id="current_number" name="current_number" min="0" required dir="ltr">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="submit" form="add-form" class="btn btn-primary">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من حذف هذا السجل؟
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form id="delete-form" method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // تحديث نموذج الحذف عند النقر على زر الحذف
+        $('.delete-btn').click(function() {
+            var id = $(this).data('id');
+            $('#delete-form').attr('action', '/shomoos/delete/' + id);
+        });
+
+        // تحديث العدد الحالي عند اختيار النادي في النافذة المنبثقة
+        $('#club_id').change(function() {
+            var clubId = $(this).val();
+            if (clubId) {
+                $.get('/shomoos/get_last_number/' + clubId, function(data) {
+                    $('#current_number').val(data.current_number);
+                });
+            } else {
+                $('#current_number').val('');
+            }
+        });
+
+        // فتح النافذة المنبثقة بشكل نظيف
+        $('#addModal').on('show.bs.modal', function() {
+            $('#add-form')[0].reset();
+            $('#current_number').val('');
+        });
+
+        // تطبيق الفلتر تلقائياً عند تغيير قيمة النادي
+        $('#filter_club_id').change(function() {
+            $(this).closest('form').submit();
+        });
+    });
+</script>
+{% endblock %}

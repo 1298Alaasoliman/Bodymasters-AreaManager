@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">تعديل سجل شموس</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('shomoos.edit', id=record.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="club_id" class="form-label">النادي</label>
+                    <select class="form-select" id="club_id" name="club_id" required>
+                        <option value="">اختر--</option>
+                        {% for club in clubs %}
+                        <option value="{{ club.id }}" {% if club.id == record.club_id %}selected{% endif %}>{{ club.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="current_number" class="form-label">العدد الحالي بنظام شموس</label>
+                    <input type="number" class="form-control text-center" id="current_number" name="current_number" value="{{ record.new_number }}" min="0" required dir="ltr">
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    <a href="{{ url_for('shomoos.index') }}" class="btn btn-secondary">إلغاء</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

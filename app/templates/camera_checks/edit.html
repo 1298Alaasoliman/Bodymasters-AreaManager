@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>تعديل تشيك الكاميرات</h5>
+                    <div>
+                        <a href="{{ url_for('camera_checks.history') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-right me-1"></i> رجوع لسجل التشيكات
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('camera_checks.edit', check_id=camera_check.id) }}">
+                        {{ form.csrf_token }}
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="club_id" class="form-label fw-bold">{{ form.club_id.label }}</label>
+                                    {{ form.club_id(class="form-select", style="text-align: right;", disabled=True) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header" style="background-color: #e0e0e0;">
+                                <h6 class="mb-0" style="color: #000000;">أوقات فحص الكاميرات</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center">
+                                        <thead>
+                                            <tr style="background-color: #000000;">
+                                                <th style="color: #FFFFFF; font-size: 16px; font-weight: bold; ">النادي</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">الافتتاح</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">12:00</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">02:00</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">03:00</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">05:00</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">08:00</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">10:00</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">11:00</th>
+                                                <th style="color: #FFD700; font-size: 16px; font-weight: bold;">11:50</th>
+                                                <th style="color: #FFFFFF; font-size: 16px; font-weight: bold;">مجموع المخالفات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <select class="form-select" disabled>
+                                                        <option>{{ camera_check.club_rel.name }}</option>
+                                                    </select>
+                                                </td>
+                                                <td>{{ form.opening_check(class="form-check-input") }}</td>
+                                                <td>{{ form.check_12(class="form-check-input") }}</td>
+                                                <td>{{ form.check_2(class="form-check-input") }}</td>
+                                                <td>{{ form.check_3(class="form-check-input") }}</td>
+                                                <td>{{ form.check_5(class="form-check-input") }}</td>
+                                                <td>{{ form.check_8(class="form-check-input") }}</td>
+                                                <td>{{ form.check_10(class="form-check-input") }}</td>
+                                                <td>{{ form.check_11(class="form-check-input") }}</td>
+                                                <td>{{ form.check_1150(class="form-check-input") }}</td>
+                                                <td class="align-middle">
+                                                    {{ form.violations_count(class="form-control text-center mx-auto", style="width: 120px;") }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="notes" class="form-label fw-bold">{{ form.notes.label }}</label>
+                                    {{ form.notes(class="form-control", rows=3) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

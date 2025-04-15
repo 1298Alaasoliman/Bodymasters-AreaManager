@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-calendar-check me-2"></i>عرض سجل دوام: {{ employee.name }}</h4>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('employees.view', id=employee.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة
+        </a>
+        <a href="{{ url_for('employees.edit_work_record', record_id=work_record.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit me-1"></i> تعديل
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>معلومات الموظف</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <th class="text-start">الاسم:</th>
+                        <td class="text-end">{{ employee.name }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-start">الرقم الوظيفي:</th>
+                        <td class="text-end">{{ employee.employee_number }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-start">المسمى الوظيفي:</th>
+                        <td class="text-end">{{ employee.position }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-start">النادي:</th>
+                        <td class="text-end">{{ employee.club.name }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>تفاصيل الدوام</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">التاريخ:</label>
+                    <p>{{ work_record.date.strftime('%Y-%m-%d') }}</p>
+                </div>
+
+                {% if work_record.is_leave %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">الحالة:</label>
+                    <p><span class="badge bg-info">{{ work_record.leave_type or 'إجازة' }}</span></p>
+                </div>
+                {% else %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">وقت الدخول:</label>
+                    <p>{{ work_record.time_in.strftime('%H:%M') if work_record.time_in else '-' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">وقت الخروج:</label>
+                    <p>{{ work_record.time_out.strftime('%H:%M') if work_record.time_out else '-' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">ساعات العمل:</label>
+                    <p>{{ work_record.hours_worked|round(1) if work_record.hours_worked else '-' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">الحالة:</label>
+                    <p>
+                        {% if work_record.time_in and work_record.time_out %}
+                        <span class="badge bg-success">حاضر</span>
+                        {% elif work_record.time_in and not work_record.time_out %}
+                        <span class="badge bg-warning">لم يسجل خروج</span>
+                        {% else %}
+                        <span class="badge bg-danger">غائب</span>
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">ملاحظات:</label>
+                    <p>{{ work_record.notes or '-' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">تاريخ الإنشاء:</label>
+                    <p>{{ work_record.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">آخر تحديث:</label>
+                    <p>{{ work_record.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_user.role == 'admin' or current_user.has_permission('employees', 'can_delete') %}
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-trash-alt me-2"></i>حذف سجل الدوام</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-danger">تحذير: سيؤدي حذف سجل الدوام إلى إزالته بشكل دائم.</p>
+                <form method="post" action="{{ url_for('employees.delete_work_record', record_id=work_record.id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذا السجل؟');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i> حذف السجل
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

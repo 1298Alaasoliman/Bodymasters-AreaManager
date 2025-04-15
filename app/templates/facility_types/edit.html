@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}تعديل نوع المرفق{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="h3 mb-0 text-gray-800">تعديل نوع المرفق</h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{{ url_for('facility_types.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى القائمة
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">معلومات نوع المرفق</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('facility_types.edit', id=facility_type.id) }}">
+                    {{ form.csrf_token }}
+
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.name.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- تم إزالة حقول الوصف والأيقونة والترتيب بناءً على طلب المستخدم -->
+
+                    <div class="mb-3 form-check">
+                        {{ form.is_active(class="form-check-input") }}
+                        {{ form.is_active.label(class="form-check-label") }}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

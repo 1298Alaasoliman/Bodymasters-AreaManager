@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-chart-bar me-2"></i>تقرير الموظفين</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('employees.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة الموظفين
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>تصفية النتائج</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="{{ url_for('employees.report') }}">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="club_id" class="form-label">النادي</label>
+                        <select class="form-select" id="club_id" name="club_id">
+                            <option value="">جميع النوادي</option>
+                            {% for club in clubs %}
+                            <option value="{{ club.id }}" {% if selected_club_id == club.id %}selected{% endif %}>{{ club.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="department" class="form-label">القسم</label>
+                        <select class="form-select" id="department" name="department">
+                            <option value="">جميع الأقسام</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept }}" {% if selected_department == dept %}selected{% endif %}>{{ dept }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">من تاريخ</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">إلى تاريخ</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                    </div>
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i> بحث
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>نتائج التقرير</h5>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-sm btn-light" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i> طباعة
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الرقم الوظيفي</th>
+                        <th>اسم الموظف</th>
+                        <th>المسمى الوظيفي</th>
+                        <th>القسم</th>
+                        <th>النادي</th>
+                        <th>أيام العمل</th>
+                        <th>ساعات العمل</th>
+                        <th>أيام الإجازة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ result.employee_number }}</td>
+                        <td>{{ result.name }}</td>
+                        <td>{{ result.position }}</td>
+                        <td>{{ result.department }}</td>
+                        <td>{{ result.club_name }}</td>
+                        <td>{{ result.work_days }}</td>
+                        <td>{{ result.total_hours|round(1) if result.total_hours else 0 }}</td>
+                        <td>{{ result.leave_days }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center">لا توجد نتائج.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    @media print {
+        .navbar, .footer, .card-header, .btn, form {
+            display: none !important;
+        }
+        
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        .card-body {
+            padding: 0 !important;
+        }
+        
+        body {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+    }
+</style>
+{% endblock %}

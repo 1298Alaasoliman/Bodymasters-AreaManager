@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    /* تنسيق شريط التقدم */
+    .progress {
+        height: 28px;
+        border-radius: 14px;
+        background-color: #f2f2f2;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 0;
+        width: 100%;
+        position: relative; /* مهم للنسبة المئوية المطلقة */
+    }
+
+    /* تنسيق النص داخل شريط التقدم */
+    .progress-bar {
+        position: relative;
+        border-radius: 14px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+        transition: width 0.6s ease, background 0.6s ease;
+        min-width: 2%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* تغيير من center إلى flex-end */
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* تنسيق النسبة المئوية داخل شريط التقدم */
+    .progress-value {
+        position: absolute;
+        right: 0;
+        left: 0;
+        text-align: center;
+        font-weight: bold;
+        font-size: 15px;
+        line-height: 28px;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        z-index: 10; /* لضمان ظهور النص فوق شريط التقدم */
+        width: 100%;
+        color: #000; /* لون النص الأسود ليكون واضحًا */
+    }
+
+    /* تنسيق شريط التقدم الصغير */
+    .progress-sm {
+        height: 28px;
+        border-radius: 14px;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">إيرادات {{ club.name }} - {{ current_month_name }} {{ current_year }}</h1>
+        <div>
+            <a href="{{ url_for('daily_revenue.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> العودة
+            </a>
+            <a href="{{ url_for('daily_revenue.create_revenue') }}" class="btn btn-success">
+                <i class="fas fa-plus-circle me-1"></i> تسجيل إيراد يومي
+            </a>
+        </div>
+    </div>
+
+    <!-- ملخص الإيرادات -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary">
+            <h6 class="m-0 font-weight-bold text-white">ملخص الإيرادات</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        تارجت الشهر</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.0f}".format(target_amount) }} ريال</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        المبلغ المحقق</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.0f}".format(revenue_amount) }} ريال</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">النسبة المحققة
+                                    </div>
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col">
+                                            <div class="progress progress-sm mr-2">
+                                                {% if percentage < 30 %}
+                                                    {% set color = "linear-gradient(to right,rgb(243, 105, 105),rgb(244, 166, 166))" %}
+                                                {% elif percentage < 50 %}
+                                                    {% set color = "linear-gradient(to right, #ffa94d, #ffc078)" %}
+                                                {% elif percentage < 80 %}
+                                                    {% set color = "linear-gradient(to right, #74c0fc, #a5d8ff)" %}
+                                                {% else %}
+                                                    {% set color = "linear-gradient(to right, #51cf66, #8ce99a)" %}
+                                                {% endif %}
+                                                <span class="progress-value">%{{ "{:.0f}".format(percentage) }}</span>
+                                                <div class="progress-bar" role="progressbar"
+                                                    style="width: {{ min(percentage, 100) }}%; background: {{ color }};"
+                                                    aria-valuenow="{{ percentage }}" aria-valuemin="0"
+                                                    aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        الفارق</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.0f}".format(remaining) }} ريال</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مستويات التارجت -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary">
+            <h6 class="m-0 font-weight-bold text-white">مستويات التارجت</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>التحقيق</th>
+                            <th>الإيراد المطلوب</th>
+                            <th>المبلغ المتبقي</th>
+                            <th>الإيراد اليومي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for level, data in target_levels.items() %}
+                        <tr>
+                            <td style="text-align: center;font-size: 16px;">{{ level }}%</td>
+                            <td style="text-align: center;font-size: 16px;">{{ "{:,.0f}".format(data.amount) }} </td>
+                            <td style="text-align: center;font-size: 16px;">{{ "{:,.0f}".format(data.remaining) }} </td>
+                            <td style="text-align: center;font-size: 16px;">{{ "{:,.0f}".format(data.daily_required) }} </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- سجل الإيرادات -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary">
+            <h6 class="m-0 font-weight-bold text-white">سجل الإيرادات</h6>
+        </div>
+        <div class="card-body">
+            {% if revenues %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المبلغ</th>
+                            <th>ملاحظات</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for revenue in revenues %}
+                        <tr>
+                            <td style="text-align: center;font-size: 16px;">{{ revenue.date.strftime('%d/%m/%Y') }}</td>
+                            <td style="text-align: center;font-size: 16px;">{{ "{:,.0f}".format(revenue.amount) }} </td>
+                            <td style="text-center;font-size: 16px;">{{ revenue.notes or '-' }}</td>
+                            <td style="text-align: center;">
+                                <a href="{{ url_for('daily_revenue.create_revenue', revenue_id=revenue.id) }}" class="btn btn-info btn-sm" style="background-color:rgb(46, 244, 112);color:rgb(23, 23, 23);">
+                                    <i class="fas fa-edit" ></i> تعديل
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted">لا توجد إيرادات مسجلة لهذا الشهر</p>
+                <a href="{{ url_for('daily_revenue.create_revenue') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i> تسجيل إيراد جديد
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

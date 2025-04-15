@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- عنوان الصفحة -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('facilities.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى التشيك
+        </a>
+    </div>
+
+    <!-- فلتر التاريخ -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ url_for('facilities.check_history') }}" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <div class="position-relative">
+                        <div class="input-group">
+                            <input type="text" class="form-control datepicker" id="start_date" name="start_date" value="{{ start_date }}" placeholder="من تاريخ" autocomplete="off">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="position-relative">
+
+                        <div class="input-group">
+                            <input type="text" class="form-control datepicker" id="end_date" name="end_date" value="{{ end_date }}" placeholder="إلى تاريخ" autocomplete="off">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-filter"></i> تصفية
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- بطاقة سجل الفحوصات -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>سجل الفحوصات</h5>
+        </div>
+        <div class="card-body">
+            {% if recent_checks %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 5%;color: #000000;background:rgb(249, 249, 244);">#</th>
+                                <th class="text-center" style="width: 20%;color: #000000;background:rgb(249, 249, 244);">النادي</th>
+                                <th class="text-center" style="width: 20%;color: #000000;background:rgb(249, 249, 244);">تاريخ الفحص</th>
+                                <th class="text-center" style="width: 30%;color: #000000;background:rgb(249, 249, 244);">النتيجة</th>
+                                <th class="text-center" style="width: 15%;color: #000000;background:rgb(249, 249, 244);">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for check in recent_checks %}
+                                <tr>
+                                    <td class="text-center"style="font-size: 0.95rem;">{{ loop.index }}</td>
+                                    <td class="text-center" style="font-size: 0.95rem;" >{{ check.facility.club.name }}</td>
+                                    <td class="text-center" style="font-size: 0.95rem;">{{ check.check_date.strftime('%d/%m/%Y %I:%M %p') }}</td>
+                                    <td class="text-center">
+                                        {% set passed = check.results.filter_by(status='passed').count() %}
+                                        {% set total = check.results.count() %}
+                                        {% if total > 0 %}
+                                            {% set percentage = (passed / total) * 100 %}
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar {{ 'bg-success' if percentage >= 80 else 'bg-warning' if percentage >= 50 else 'bg-danger' }}"
+                                                     role="progressbar"
+                                                     style="width: {{ percentage }}%; font-size: 0.95rem;"
+                                                     aria-valuenow="{{ percentage }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                    {{ '%0.1f'|format(percentage) }}%
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="badge bg-secondary">لا توجد نتائج</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center" style="flex-direction: row; flex-wrap: nowrap;">
+                                            <a href="{{ url_for('facilities.check_details', check_id=check.id) }}" class="btn btn-info btn-sm me-1" style="background-color: #007bff;border-color: #007bff;font-size: 0.7rem;display: inline-flex;align-items: center;justify-content: center;width: 85px;padding: 0.25rem 0.1rem;">
+                                                <i class="fas fa-eye me-1"></i> عرض النتائج
+                                            </a>
+                                            <a href="{{ url_for('facilities.edit_check', check_id=check.id) }}" class="btn btn-warning btn-sm me-1" style="font-size: 0.7rem;display: inline-flex;align-items: center;justify-content: center;width: 60px;padding: 0.25rem 0.1rem;">
+                                                <i class="fas fa-edit me-1"></i> تعديل
+                                            </a>
+                                            <button type="button" class="btn btn-danger btn-sm" style="font-size: 0.7rem;display: inline-flex;align-items: center;justify-content: center;width: 55px;padding: 0.25rem 0.1rem;" data-bs-toggle="modal" data-bs-target="#deleteModal{{ check.id }}">
+                                                <i class="fas fa-trash me-1"></i> حذف
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal for delete confirmation -->
+                                        <div class="modal fade" id="deleteModal{{ check.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ check.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="deleteModalLabel{{ check.id }}">تأكيد الحذف</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        هل أنت متأكد من حذف هذا الفحص وجميع نتائجه؟ لا يمكن التراجع عن هذا الإجراء.
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                        <form action="{{ url_for('facilities.delete_check', check_id=check.id) }}" method="post">
+                                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    لا توجد فحوصات سابقة للأندية التابعة لك.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.ar.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة حقول التاريخ
+        $('#start_date, #end_date').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            todayHighlight: true,
+            language: 'ar',
+            rtl: true,
+            zIndexOffset: 9999,
+            orientation: "bottom",
+            container: 'body',
+            clearBtn: false,
+            templates: {
+                leftArrow: '<i class="fas fa-chevron-left"></i>',
+                rightArrow: '<i class="fas fa-chevron-right"></i>'
+            }
+        });
+
+        // إضافة معالجات للنقر على حقول التاريخ وأيقونات التقويم
+        $('#start_date, #end_date, .fa-calendar-alt').on('click', function() {
+            var $input = $(this).hasClass('fa-calendar-alt') ?
+                        $(this).closest('.position-relative').find('input') :
+                        $(this);
+
+            $input.datepicker('show');
+
+            // التأكد من أن التقويم مرئي وفوق جميع العناصر
+            setTimeout(function() {
+                var $dropdown = $('.datepicker-dropdown');
+                $dropdown.css({
+                    'z-index': '9999',
+                    'position': 'absolute',
+                    'display': 'block'
+                });
+
+                // التأكد من أن التقويم لا يظهر داخل البطاقة
+                var offset = $input.offset();
+                var height = $input.outerHeight();
+                $dropdown.css({
+                    'top': (offset.top + height) + 'px',
+                    'left': offset.left + 'px'
+                });
+
+                // التأكد من أن التقويم موجود في body
+                if ($dropdown.parent().is('body') === false) {
+                    $dropdown.detach().appendTo('body');
+                }
+            }, 10);
+        });
+
+        // إضافة معالج لتغيير لون الخلفية عند اختيار تاريخ
+        $('.datepicker').on('changeDate', function() {
+            $(this).addClass('has-value');
+        });
+
+        // إضافة معالج للتأكد من أن قائمة التاريخ تظهر بشكل صحيح
+        $('.datepicker').on('show', function(e) {
+            var $this = $(this);
+            setTimeout(function() {
+                var $dropdown = $('.datepicker-dropdown');
+                $dropdown.css({
+                    'z-index': '9999',
+                    'position': 'absolute',
+                    'display': 'block'
+                });
+
+                // التأكد من أن التقويم لا يظهر داخل البطاقة
+                var offset = $this.offset();
+                var height = $this.outerHeight();
+                $dropdown.css({
+                    'top': (offset.top + height) + 'px',
+                    'left': offset.left + 'px'
+                });
+
+                // التأكد من أن التقويم موجود في body
+                if ($dropdown.parent().is('body') === false) {
+                    $dropdown.detach().appendTo('body');
+                }
+
+                // إزالة الأيقونات الإضافية
+                removeExtraIcons();
+            }, 10);
+        });
+
+        // دالة لإزالة الأيقونات الإضافية
+        function removeExtraIcons() {
+            // إزالة جميع الصور في الصفحة باستثناء الصور المعروفة
+            $('img').each(function() {
+                var src = $(this).attr('src') || '';
+                if (src.includes('calendar') || src.includes('date') || !src) {
+                    $(this).remove();
+                }
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('.date-input-container').each(function() {
+                $(this).nextAll('img, svg, button:not(.btn), a:not(.btn), span:not(.input-group-text), div:not(.input-group-append):not(.input-group-text)').remove();
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('.datepicker').each(function() {
+                $(this).nextAll('img, svg, button:not(.btn), a:not(.btn), span:not(.input-group-text), div:not(.input-group-append):not(.input-group-text)').remove();
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('.col-md-3').each(function() {
+                $(this).find('img:not(.fa):not(.fas):not(.far):not(.fab)').remove();
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('.date-field-column').each(function() {
+                var column = $(this);
+                column.find('img').remove();
+
+                // إضافة عنصر لإخفاء الأيقونات
+                var overlay = $('<div class="date-field-overlay"></div>');
+                overlay.css({
+                    'position': 'absolute',
+                    'top': '35px',
+                    'left': '0',
+                    'width': '100%',
+                    'height': '100px',
+                    'background-color': 'white',
+                    'z-index': '5',
+                    'pointer-events': 'none'
+                });
+                column.css('position', 'relative').append(overlay);
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('body').append('<style>.datepicker ~ img, .datepicker + img, .date-input-container ~ img, .date-input-container + img, .date-field-column img:not(.fa):not(.fas):not(.far):not(.fab) { display: none !important; visibility: hidden !important; opacity: 0 !important; width: 0 !important; height: 0 !important; position: absolute !important; pointer-events: none !important; }</style>');
+        }
+
+        // تنفيذ الدالة بعد تحميل الصفحة
+        setTimeout(removeExtraIcons, 100);
+        setTimeout(removeExtraIcons, 500);
+        setTimeout(removeExtraIcons, 1000);
+        setTimeout(removeExtraIcons, 2000);
+
+        // تنفيذ الدالة عند النقر على أي مكان في الصفحة
+        document.addEventListener('click', function() {
+            setTimeout(removeExtraIcons, 100);
+        });
+
+        // تنفيذ الدالة عند تحميل الصفحة بالكامل
+        $(window).on('load', function() {
+            removeExtraIcons();
+            setTimeout(removeExtraIcons, 100);
+            setTimeout(removeExtraIcons, 500);
+            setTimeout(removeExtraIcons, 1000);
+
+            // تنفيذ الدالة بشكل متكرر كل 500 مللي ثانية
+            setInterval(removeExtraIcons, 500);
+        });
+
+        // تنفيذ الدالة عند النقر على حقول التاريخ
+        $(document).on('click', '.datepicker, .date-input-container, .input-group-text', function() {
+            setTimeout(removeExtraIcons, 10);
+            setTimeout(removeExtraIcons, 100);
+            setTimeout(removeExtraIcons, 300);
+        });
+
+        // تنفيذ الدالة عند تغيير حجم النافذة
+        $(window).on('resize', function() {
+            removeExtraIcons();
+        });
+
+        // تنفيذ الدالة عند التمرير
+        $(window).on('scroll', function() {
+            removeExtraIcons();
+        });
+    });
+</script>
+{% endblock %}

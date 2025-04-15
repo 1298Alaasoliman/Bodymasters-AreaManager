@@ -1,0 +1,531 @@
+/* ملف CSS مخصص لنظام إدارة النوادي الرياضية */
+
+/* إلغاء تأثير الخط تحت النص عند مرور مؤشر الماوس على جميع العناصر */
+a:hover, button:hover, .btn:hover, .nav-link:hover, .dropdown-item:hover, .navbar-brand:hover, .page-link:hover, .nav-tabs .nav-link:hover {
+    text-decoration: none !important;
+}
+
+/* تخصيص الخطوط */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap');
+
+body {
+    font-family: 'Cairo', sans-serif;
+}
+
+/* تخصيص الألوان */
+:root {
+    --primary-color: #808080; /* رصاصي */
+    --secondary-color: #FFD700; /* أصفر ذهبي */
+    --dark-color: #000000; /* أسود */
+    --light-color: #FFFFFF; /* أبيض */
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+}
+
+/* تخصيص الهيدر */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030;
+}
+
+.navbar .container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+/* إضافة مساحة أعلى المحتوى لتعويض الناف بار الثابت */
+body {
+    padding-top: 70px;
+}
+
+/* تنسيق مربعات الاختيار في صفحة النوادي */
+#clubsTable .form-check-input, .list-group-item .form-check-input {
+    width: 18px;
+    height: 18px;
+    margin: 0 auto;
+    display: block;
+    border-radius: 3px;
+    cursor: default;
+}
+
+/* تنسيق مفاتيح تبديل حالة بنود المرافق */
+.toggle-container {
+    position: relative;
+    display: inline-block;
+}
+
+.facility-item-toggle {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-switch {
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    background-color: #e9ecef;
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.3s;
+    border: 1px solid #ced4da;
+}
+
+.toggle-switch::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    top: 1px;
+    left: 2px;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s;
+}
+
+.facility-item-toggle:checked + .toggle-switch {
+    background-color: var(--secondary-color); /* أصفر ذهبي */
+    border-color: var(--secondary-color);
+}
+
+.facility-item-toggle:checked + .toggle-switch::before {
+    transform: translateX(26px);
+}
+
+.facility-item-toggle:focus + .toggle-switch {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* تنسيق نص الحالة */
+.status-text {
+    font-size: 12px;
+    font-weight: 500;
+    min-width: 50px;
+    display: inline-block;
+    text-align: center;
+}
+
+/* تنسيق أيقونات الفلتر في رؤوس الجداول */
+.filter-icon {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.filter-icon:hover {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+.filter-icon.active {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+/* تنسيق قائمة الفلتر */
+.filter-dropdown {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 1000;
+    min-width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.filter-dropdown.show {
+    display: block;
+}
+
+.filter-dropdown .filter-search {
+    margin-bottom: 10px;
+}
+
+.filter-dropdown .filter-options {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.filter-dropdown .filter-option {
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.filter-dropdown .filter-option:hover {
+    background-color: #f8f9fa;
+}
+
+.filter-dropdown .filter-option input {
+    margin-left: 8px;
+}
+
+.filter-dropdown .filter-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* تنسيق مربعات اختيار أنواع المرافق */
+.facility-types-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.facility-types-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+
+.facility-types-container li {
+    margin-bottom: 5px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+}
+
+.facility-types-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-left: 8px;
+    border-radius: 3px;
+}
+
+.facility-types-container label {
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+/* تنسيق قائمة أنواع المرافق في صفحة عرض النادي */
+.facility-types-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.facility-type-item {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+}
+
+.facility-type-icon {
+    margin-left: 8px;
+    color: #0d6efd;
+}
+
+.facility-type-name {
+    font-size: 14px;
+}
+
+/* تخصيص البطاقات */
+.card {
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+    font-weight: bold;
+}
+
+/* تخصيص الأزرار */
+.btn {
+    border-radius: 0.3rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+/* تخصيص الجداول */
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+    font-size: 12px;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.075);
+}
+
+/* تخصيص النماذج */
+.form-control {
+    border-radius: 0.3rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* تخصيص حقول التاريخ */
+.custom-datepicker {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%230d6efd' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 0.75rem center;
+    background-size: 16px 16px;
+    padding-left: 2.5rem;
+    cursor: pointer;
+    direction: ltr;
+    text-align: left;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.custom-datepicker::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+}
+
+/* تخصيص قائمة التاريخ المنسدلة */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+}
+
+/* تخصيص قائمة التاريخ في كروم - إخفاء التلميحات تمامًا */
+::-webkit-datetime-edit { padding: 0; }
+::-webkit-datetime-edit-fields-wrapper { background: transparent; color: transparent; }
+::-webkit-datetime-edit-text { color: transparent; display: none; }
+::-webkit-datetime-edit-month-field { color: transparent; }
+::-webkit-datetime-edit-day-field { color: transparent; }
+::-webkit-datetime-edit-year-field { color: transparent; }
+::-webkit-inner-spin-button { display: none; }
+::-webkit-calendar-picker-indicator { background: transparent; }
+
+/* إظهار القيم فقط عند اختيار تاريخ */
+input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-month-field,
+input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-day-field,
+input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-year-field {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+/* تخصيص قائمة التاريخ في فايرفوكس */
+input[type="date"] {
+    position: relative;
+}
+
+input[type="date"]::-moz-calendar-picker-indicator {
+    background: transparent;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.custom-datepicker::-webkit-datetime-edit-fields-wrapper {
+    color: #212529;
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.custom-datepicker::-webkit-datetime-edit-text,
+.custom-datepicker::-webkit-datetime-edit-month-field,
+.custom-datepicker::-webkit-datetime-edit-day-field,
+.custom-datepicker::-webkit-datetime-edit-year-field {
+    color: #212529;
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* تخصيص حقل التاريخ عند التركيز */
+.custom-datepicker:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* تخصيص قائمة التاريخ المنسدلة */
+::-webkit-calendar-picker {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+::-webkit-calendar-picker-indicator:hover {
+    background-color: #e9ecef;
+}
+
+.custom-datepicker::-webkit-inner-spin-button {
+    display: none;
+}
+
+.custom-datepicker::-webkit-clear-button {
+    display: none;
+}
+
+/* تخصيص الفوتر */
+.footer {
+    border-top: 1px solid #e9ecef;
+}
+
+/* تخصيص لوحة التحكم */
+.dashboard-card {
+    border: none;
+    border-radius: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.dashboard-icon {
+    font-size: 2.5rem;
+    opacity: 0.7;
+}
+
+/* تخصيص الإشعارات */
+.alert {
+    border-radius: 0.3rem;
+}
+
+/* تخصيص الصفحات */
+.page-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* تخصيص الأيقونات */
+.icon-large {
+    font-size: 1.5rem;
+}
+
+/* تخصيص الصور */
+.img-thumbnail {
+    border-radius: 0.3rem;
+}
+
+/* تخصيص التنقل */
+.pagination .page-link {
+    color: var(--primary-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* تخصيص الشاشات الصغيرة */
+@media (max-width: 768px) {
+    .card-title {
+        font-size: 1.1rem;
+    }
+
+    .dashboard-icon {
+        font-size: 2rem;
+    }
+}
+
+/* تخصيص الطباعة */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* تخصيص الـ checkboxes */
+.form-check-input[type="checkbox"] {
+    width: 1.3rem;
+    height: 1.3rem;
+    margin-top: 0.25rem;
+    border-radius: 0.1rem; /* جعل الـ checkbox مربعة أكثر */
+    cursor: pointer;
+    border: 1px solid #adb5bd;
+}
+
+.form-check-label {
+    margin-right: 0.8rem; /* زيادة التباعد بين الـ checkbox والنص */
+    margin-left: 0.8rem;
+    cursor: pointer;
+    font-weight: 500;
+    padding-top: 0.1rem; /* لمحاذاة النص مع الـ checkbox */
+}
+
+.form-check-inline {
+    margin-left: 1.2rem;
+    margin-right: 0;
+    display: inline-flex;
+    align-items: center;
+}

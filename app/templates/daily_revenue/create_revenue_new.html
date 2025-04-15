@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<!-- إضافة مكتبة Flatpickr لاختيار التاريخ -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+<style>
+    /* تنسيق الأعمدة لتكون متساوية في العرض */
+    .equal-width-column {
+        flex: 0 0 33.333% !important;
+        max-width: 33.333% !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    /* تنسيق الصف لإزالة المسافات الزائدة */
+    .equal-row {
+        margin-left: -10px !important;
+        margin-right: -10px !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+    }
+
+    /* تنسيق حقل التاريخ */
+    .date-input-container {
+        position: relative;
+        width: 100%;
+    }
+
+    /* زيادة عرض عمود حقل التاريخ */
+    .date-column {
+        flex: 0 0 40% !important;
+        max-width: 40% !important;
+    }
+
+    /* تعديل عرض الأعمدة الأخرى */
+    .club-column {
+        flex: 0 0 30% !important;
+        max-width: 30% !important;
+    }
+
+    .amount-column {
+        flex: 0 0 30% !important;
+        max-width: 30% !important;
+    }
+
+    .custom-datepicker {
+        width: 100%;
+        height: 38px;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        text-align: center;
+        direction: ltr !important;
+    }
+
+    .custom-datepicker:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .calendar-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4e73df;
+        pointer-events: none;
+    }
+
+    /* تنسيق حقل المبلغ */
+    .amount-input {
+        text-align: center !important;
+    }
+
+    /* تنسيق مكتبة Flatpickr */
+    .flatpickr-calendar {
+        background-color: white !important;
+        color: #333 !important;
+        border: 1px solid #e6e6e6 !important;
+        border-radius: 4px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        width: 307px !important;
+    }
+
+    .flatpickr-day {
+        color: #333 !important;
+        border-radius: 5px !important;
+    }
+
+    .flatpickr-day.selected {
+        background-color: #4e73df !important;
+        color: white !important;
+        border-color: #4e73df !important;
+    }
+
+    .flatpickr-day:hover {
+        background-color: #eaeaea !important;
+    }
+
+    .flatpickr-day.today {
+        border-color: #4e73df !important;
+    }
+
+    .flatpickr-months .flatpickr-month {
+        background-color: #4e73df !important;
+        color: white !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background-color: #4e73df !important;
+        color: white !important;
+    }
+
+    .flatpickr-current-month input.cur-year {
+        color: white !important;
+    }
+
+    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+        color: white !important;
+        fill: white !important;
+    }
+
+    /* إخفاء أيقونة التقويم الافتراضية */
+    .flatpickr-calendar-icon {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">تسجيل إيراد يومي</h1>
+        <a href="{{ url_for('daily_revenue.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> العودة
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary">
+            <h6 class="m-0 font-weight-bold text-white">بيانات الإيراد اليومي</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('daily_revenue.create_revenue') }}">
+                {{ form.hidden_tag() }}
+                <div class="row mb-3 equal-row">
+                    <div class="col-md-4 club-column">
+                        <div class="form-group">
+                            {{ form.club_id.label(class="form-label") }}
+                            {{ form.club_id(class="form-control") }}
+                            {% if form.club_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.club_id.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4 date-column">
+                        <div class="form-group">
+                            {{ form.date.label(class="form-label") }}
+                            <div class="date-input-container">
+                                {{ form.date(class="custom-datepicker", autocomplete="off") }}
+                                <i class="fas fa-calendar-alt calendar-icon"></i>
+                            </div>
+                            {% if form.date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.date.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4 amount-column">
+                        <div class="form-group">
+                            {{ form.amount.label(class="form-label") }}
+                            {{ form.amount(class="form-control amount-input") }}
+                            {% if form.amount.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.amount.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- إضافة مكتبة Flatpickr -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة حقول التاريخ باستخدام Flatpickr
+        flatpickr(".custom-datepicker", {
+            dateFormat: "d/m/Y",
+            locale: "ar",
+            disableMobile: "true",
+            allowInput: true,
+            position: "auto",
+            static: true
+        });
+
+        // إزالة أيقونة التقويم الافتراضية
+        setTimeout(function() {
+            const calendarIcons = document.querySelectorAll('.flatpickr-calendar-icon');
+            calendarIcons.forEach(icon => {
+                icon.style.display = 'none';
+            });
+        }, 100);
+    });
+</script>
+{% endblock %}

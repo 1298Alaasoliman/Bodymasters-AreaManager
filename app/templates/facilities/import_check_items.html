@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-file-import me-2"></i>استيراد عناصر الفحص</h2>
+        <p class="text-muted">{{ facility.name }} - {{ facility.club.name }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('facilities.view', id=facility.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى تفاصيل المرفق
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>تحميل ملف Excel</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>تعليمات الاستيراد:</h5>
+                    <ol>
+                        <li>يجب أن يحتوي ملف Excel على عمودين إلزاميين: <strong>name</strong> (اسم العنصر) و <strong>description</strong> (الوصف - اختياري).</li>
+                        <li>يمكن إضافة الأعمدة الاختيارية التالية:
+                            <ul>
+                                <li><strong>order</strong> (الترتيب - رقم صحيح)</li>
+                                <li><strong>is_required</strong> (مطلوب - قيم مقبولة: true, 1, yes, y, نعم)</li>
+                            </ul>
+                        </li>
+                        <li>يجب أن يكون الصف الأول هو صف العناوين.</li>
+                        <li>سيتم تجاهل العناصر المكررة (بنفس الاسم).</li>
+                        <li>يمكنك <a href="{{ url_for('static', filename='templates/check_items_template.xlsx') }}" class="alert-link">تحميل قالب Excel</a> للاستخدام.</li>
+                    </ol>
+                </div>
+
+                <form method="post" action="{{ url_for('facilities.import_check_items', facility_id=facility.id) }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">اختر ملف Excel:</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx, .xls" required>
+                        <div class="form-text">يجب أن يكون الملف بتنسيق Excel (.xlsx أو .xls).</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i> استيراد
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

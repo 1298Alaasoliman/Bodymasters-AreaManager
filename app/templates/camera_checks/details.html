@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-video me-2"></i>تفاصيل تشيك الكاميرات</h5>
+                    <div>
+                        <a href="{{ url_for('camera_checks.history') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-right me-1"></i> رجوع لسجل التشيكات
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">النادي:</h6>
+                            <p>{{ camera_check.club_rel.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">تاريخ التشيك:</h6>
+                            <p>{{ camera_check.check_date.strftime('%d/%m/%Y') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header" style="background-color: #e0e0e0;">
+                            <h6 class="mb-0" style="color: #000000;">أوقات فحص الكاميرات</h6>
+
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center">
+                                    <thead>
+                                        <tr style="background-color: #000000;">
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">الافتتاح</th>
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">12:00</th>
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">02:00</th>
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">03:00</th>
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">05:00</th>
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">08:00</th>
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">10:00</th>
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">11:00</th>
+                                            <th style="color: #FFD700; font-size: 16px; font-weight: bold;">11:50</th>
+                                            <th style="color: #FFFFFF; font-size: 16px; font-weight: bold;">مجموع المخالفات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                {% if camera_check.opening_check %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if camera_check.check_12 %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if camera_check.check_2 %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if camera_check.check_3 %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if camera_check.check_5 %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if camera_check.check_8 %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if camera_check.check_10 %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if camera_check.check_11 %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if camera_check.check_1150 %}
+                                                    <span class="badge rounded-pill bg-success p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-check"></i>
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger p-1" style="font-size: 14px;">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="align-middle">
+                                                <span class="badge bg-danger fs-6 px-3 py-2">{{ camera_check.violations_count }}</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h6 class="fw-bold">ملاحظات:</h6>
+                            <p>{{ camera_check.notes or 'لا توجد ملاحظات' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="fw-bold">تم التشيك بواسطة:</h6>
+                            <p>{{ camera_check.user_rel.name }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

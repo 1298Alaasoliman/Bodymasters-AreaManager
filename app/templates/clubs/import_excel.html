@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}استيراد الأندية من ملف إكسل{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">استيراد الأندية من ملف إكسل</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>تعليمات الاستيراد:</h5>
+                        <ul>
+                            <li>يجب أن يكون الملف بصيغة Excel (.xls أو .xlsx)</li>
+                            <li>يجب أن يحتوي الملف على الأعمدة التالية:
+                                <ul>
+                                    <li>اسم النادي</li>
+                                    <li>الاسم (اسم مدير النادي)</li>
+                                    <li>الرقم الوظيفي</li>
+                                </ul>
+                            </li>
+                            <li>سيتم تحديث النادي إذا كان موجوداً بالفعل، أو إضافته إذا لم يكن موجوداً</li>
+                        </ul>
+                    </div>
+                    
+                    <form action="{{ url_for('clubs.import_excel') }}" method="post" enctype="multipart/form-data" class="mt-4">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="excelFile" class="form-label fw-bold">اختر ملف الإكسل</label>
+                            <input type="file" class="form-control" id="excelFile" name="file" accept=".xls,.xlsx" required>
+                        </div>
+                        <div class="d-flex">
+                            <button type="submit" class="btn btn-success me-2">
+                                <i class="fas fa-file-import me-1"></i> استيراد
+                            </button>
+                            <a href="{{ url_for('clubs.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right me-1"></i> العودة
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

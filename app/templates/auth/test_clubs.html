@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">اختبار قائمة الأندية</h4>
+                </div>
+                <div class="card-body">
+                    <h5>عدد الأندية: {{ all_clubs|length }}</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>المعرف</th>
+                                <th>اسم النادي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for club in all_clubs %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ club.id }}</td>
+                                <td>{{ club.name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <h5 class="mt-4">الأندية المحددة للمستخدم: {{ user_club_ids|length }}</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>المعرف</th>
+                                <th>اسم النادي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for club_id in user_club_ids %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ club_id }}</td>
+                                <td>
+                                    {% for club in all_clubs %}
+                                        {% if club.id == club_id %}
+                                            {{ club.name }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

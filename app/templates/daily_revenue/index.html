@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    /* تنسيق الجدول */
+    #dataTable th {
+        text-align: center;
+        vertical-align: middle;
+        font-weight: bold;
+        background-color: #f8f9fc;
+    }
+
+    /* تنسيق خلايا الجدول */
+    #dataTable td {
+        vertical-align: middle;
+    }
+
+    /* تنسيق عمود النادي */
+    #dataTable td:first-child {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* تنسيق الأعمدة الرقمية */
+    #dataTable td:nth-child(2),
+    #dataTable td:nth-child(3),
+    #dataTable td:nth-child(4),
+    #dataTable td:nth-child(5) {
+        text-align: center;
+        font-weight: 600;
+    }
+
+    /* تنسيق عمود الإجراءات */
+    #dataTable td:last-child {
+        text-align: center;
+    }
+
+    /* تنسيق شريط التقدم */
+    .progress {
+        height: 28px;
+        border-radius: 14px;
+        background-color: #f2f2f2;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 0;
+        width: 100%;
+        position: relative; /* مهم للنسبة المئوية المطلقة */
+    }
+
+    /* تنسيق النص داخل شريط التقدم */
+    .progress-bar {
+        position: relative;
+        border-radius: 14px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+        transition: width 0.6s ease, background 0.6s ease;
+        min-width: 2%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* تغيير من center إلى flex-end */
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* تنسيق النسبة المئوية داخل شريط التقدم */
+    .progress-value {
+        position: absolute;
+        right: 0;
+        left: 0;
+        text-align: center;
+        font-weight: bold;
+        font-size: 15px;
+        line-height: 28px;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        z-index: 10; /* لضمان ظهور النص فوق شريط التقدم */
+        width: 100%;
+        color: #000; /* لون النص الأسود ليكون واضحًا */
+    }
+
+    /* تنسيق الجدول */
+    #dataTable {
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    /* تنسيق رأس الجدول */
+    #dataTable thead th {
+        padding: 12px 8px;
+        font-size: 14px;
+        border-bottom: 2px solid #e3e6f0;
+        background-color: #f8f9fc;
+    }
+
+    /* تنسيق صفوف الجدول */
+    #dataTable tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    #dataTable tbody tr:hover {
+        background-color: #eaecf4;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+
+    /* تنسيق الأرقام في الجدول */
+    #dataTable td.text-center {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+    }
+
+    /* تنسيق الزر المخصص */
+    .custom-btn, .btn-primary, .btn-success {
+        border-radius: 20px;
+        padding: 5px 15px;
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .custom-btn:hover, .btn-primary:hover, .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .custom-btn i, .btn-primary i, .btn-success i {
+        margin-left: 5px;
+    }
+
+    /* تنسيق عنوان الصفحة */
+    .page-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #5a5c69;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* تنسيق العنصر المثبت */
+    .sticky-top {
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid #e3e6f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ملخص الإيرادات الإجمالية - مثبت في الأعلى -->
+    <div class="sticky-top pt-2 pb-2 bg-white" style="z-index: 1000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="h3 mb-0 text-gray-800">الإيرادات اليومية - {{ current_month_name }} {{ current_year }}</h4>
+        </div>
+
+        <!-- ملخص الإيرادات الإجمالية -->
+        <div class="card shadow mb-2">
+        <div class="card-header py-3 bg-primary">
+            <h6 class="m-0 font-weight-bold text-white">ملخص الإيرادات الإجمالية</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        تارجت الشهر</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.0f}".format(total_target) }} ريال</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        المبلغ المحقق</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.0f}".format(total_revenue) }} ريال</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        الفارق</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.0f}".format(total_remaining) }} ريال</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">النسبة المحققة
+                                    </div>
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col">
+                                            <div class="progress mr-2">
+                                                {% if total_percentage < 30 %}
+                                                    {% set color = "linear-gradient(to right, #ff6b6b, #ff8787)" %}
+                                                {% elif total_percentage < 50 %}
+                                                    {% set color = "linear-gradient(to right, #ffa94d, #ffc078)" %}
+                                                {% elif total_percentage < 80 %}
+                                                    {% set color = "linear-gradient(to right, #74c0fc, #a5d8ff)" %}
+                                                {% else %}
+                                                    {% set color = "linear-gradient(to right, #51cf66, #8ce99a)" %}
+                                                {% endif %}
+                                                <span class="progress-value">%{{ "{:.0f}".format(total_percentage) }}</span>
+                                                <div class="progress-bar" role="progressbar"
+                                                    style="width: {% if total_percentage > 100 %}100{% else %}{{ total_percentage }}{% endif %}%; background: {{ color }};"
+                                                    aria-valuenow="{{ total_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div> <!-- إغلاق العنصر المثبت -->
+
+    <!-- الأزرار -->
+    <div class="d-flex justify-content-between align-items-center my-3">
+        <div class="page-title">الإيرادات اليومية - {{ current_month_name }} {{ current_year }}</div>
+        <div>
+            <a href="{{ url_for('daily_revenue.create_target') }}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i> إضافة تارجت شهري
+            </a>
+            <a href="{{ url_for('daily_revenue.create_revenue') }}" class="btn btn-success">
+                <i class="fas fa-plus-circle me-1"></i> تسجيل إيراد يومي
+            </a>
+        </div>
+    </div>
+
+    <!-- إيرادات الأندية -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary">
+            <h6 class="m-0 font-weight-bold text-white">إيرادات الأندية</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%; color: #000000;background:rgb(235, 242, 172);">النادي</th>
+                            <th style="width: 15%; color: #000000;background:rgb(235, 242, 172);">تارجت الشهر</th>
+                            <th style="width: 15%; color: #000000;background:rgb(235, 242, 172);">المبلغ المحقق</th>
+                            <th style="width: 30%; color: #000000;background:rgb(235, 242, 172);">النسبة المحققة</th>
+                            <th style="width: 15%; color: #000000;background:rgb(235, 242, 172);">الفارق</th>
+                            <th style="width: 10%; color: #000000;background:rgb(235, 242, 172);">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for club in user_clubs %}
+                        <tr>
+                            <td title="{{ club.name }}">{{ club.name }}</td>
+                            <td class="text-center">{{ "{:,.0f}".format(club_targets[club.id]) }} ريال</td>
+                            <td class="text-center">{{ "{:,.0f}".format(club_revenues[club.id]) }} ريال</td>
+                            <td class="text-center">
+                                <div class="progress">
+                                    {% set percentage = club_percentages[club.id] %}
+                                    {% if percentage < 30 %}
+                                        {% set color = "linear-gradient(to right, #ff6b6b, #ff8787)" %}
+                                    {% elif percentage < 50 %}
+                                        {% set color = "linear-gradient(to right, #ffa94d, #ffc078)" %}
+                                    {% elif percentage < 80 %}
+                                        {% set color = "linear-gradient(to right, #74c0fc, #a5d8ff)" %}
+                                    {% else %}
+                                        {% set color = "linear-gradient(to right, #51cf66, #8ce99a)" %}
+                                    {% endif %}
+                                    <span class="progress-value">%{{ "{:.0f}".format(percentage) }}</span>
+                                    <div class="progress-bar" role="progressbar"
+                                         style="width: {{ min(percentage, 100) }}%; background: {{ color }};"
+                                         aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">{{ "{:,.0f}".format(club_remaining[club.id]) }} ريال</td>
+                            <td class="text-center">
+                                <a href="{{ url_for('daily_revenue.club_details', club_id=club.id) }}" class="btn btn-info btn-sm custom-btn">
+                                    <i class="fas fa-eye"></i> تفاصيل
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

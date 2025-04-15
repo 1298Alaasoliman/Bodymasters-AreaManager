@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}بنود نوع المرفق: {{ facility_type.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3 class="h3 mb-0 text-gray-800">بنود نوع المرفق: {{ facility_type.name }}</h3>
+    </div>
+    <div class="col-md-6 text-md-end">
+        {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('facility_type_items.import_excel', facility_type_id=facility_type.id) }}" class="btn btn-success me-2">
+            <i class="fas fa-file-excel me-1"></i> استيراد من الإكسيل
+        </a>
+        <a href="{{ url_for('facility_type_items.create', facility_type_id=facility_type.id) }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> إضافة بند جديد
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow mb-4 border-0 rounded-3">
+    <div class="card-header bg-primary text-white py-3 rounded-top">
+        <div class="row align-items-center">
+            <div class="col">
+                <h6 class="m-0 font-weight-bold">قائمة البنود</h6>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('facility_types.index') }}" class="btn btn-sm btn-light">
+                    <i class="fas fa-arrow-right me-1"></i> العودة إلى أنواع المرافق
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if items %}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" id="itemSearch" class="form-control" placeholder="بحث عن بند...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearItemSearch">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="badge bg-primary">عدد البنود: {{ items|length }}</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover" id="itemsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width: 5%;">#</th>
+                        <th style="width: 40%;">اسم البند</th>
+                        <th style="width: 15%;" class="text-center">مطلوب للفحص</th>
+                        <th style="width: 15%;" class="text-center">الحالة</th>
+                        <th style="width: 25%;" class="text-center">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ item.name }}</td>
+                        <td class="text-center">
+                            {% if item.is_required %}
+                            <span class="badge bg-success">نعم</span>
+                            {% else %}
+                            <span class="badge bg-secondary">لا</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if item.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                            {% else %}
+                            <span class="badge bg-secondary">غير نشط</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if current_user.role == 'admin' %}
+                            <a href="{{ url_for('facility_type_items.edit', id=item.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ item.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            
+                            <!-- Modal for Delete Confirmation -->
+                            <div class="modal fade" id="deleteModal{{ item.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ item.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel{{ item.id }}">تأكيد الحذف</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-end">
+                                            هل أنت متأكد من حذف البند "{{ item.name }}"؟
+                                        </div>
+                                        <div class="modal-footer justify-content-start">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                            <form action="{{ url_for('facility_type_items.delete', id=item.id) }}" method="post" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-danger">حذف</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="text-muted">لا توجد إجراءات متاحة</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">لا توجد بنود لنوع المرفق هذا.</p>
+        <div class="text-center">
+            <a href="{{ url_for('facility_type_items.create', facility_type_id=facility_type.id) }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> إضافة بند جديد
+            </a>
+            <a href="{{ url_for('facility_type_items.import_excel', facility_type_id=facility_type.id) }}" class="btn btn-success">
+                <i class="fas fa-file-excel me-1"></i> استيراد من الإكسيل
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // بحث في الجدول
+        const searchInput = document.getElementById('itemSearch');
+        const clearButton = document.getElementById('clearItemSearch');
+        const table = document.getElementById('itemsTable');
+        
+        if (searchInput && clearButton && table) {
+            searchInput.addEventListener('keyup', function() {
+                const searchText = this.value.toLowerCase();
+                const rows = table.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const name = row.cells[1].textContent.toLowerCase();
+                    if (name.includes(searchText)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                const event = new Event('keyup');
+                searchInput.dispatchEvent(event);
+            });
+        }
+    });
+</script>
+{% endblock %}

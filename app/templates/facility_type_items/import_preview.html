@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}معاينة استيراد بنود نوع المرفق: {{ facility_type.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3 class="h3 mb-0 text-gray-800">معاينة استيراد بنود نوع المرفق: {{ facility_type.name }}</h3>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{{ url_for('facility_type_items.import_excel', facility_type_id=facility_type.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى صفحة الاستيراد
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4 border-0 rounded-3">
+            <div class="card-header bg-primary text-white rounded-top">
+                <h5 class="mb-0"><i class="fas fa-table me-2"></i>معاينة البيانات</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <p><i class="fas fa-info-circle me-2"></i>تم العثور على {{ preview_data.total_rows }} سجل في الملف. يتم عرض أول 5 سجلات للمعاينة.</p>
+                </div>
+                
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                {% for column in preview_data.columns %}
+                                <th>{{ column }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in preview_data.data %}
+                            <tr>
+                                {% for cell in row %}
+                                <td>{{ cell }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <form method="post" action="{{ url_for('facility_type_items.import_confirm', facility_type_id=facility_type.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="file_path" value="{{ file_path }}">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="name_column" class="form-label">عمود اسم البند <span class="text-danger">*</span></label>
+                            <select class="form-select" id="name_column" name="name_column" required>
+                                <option value="">اختر العمود...</option>
+                                {% for column in preview_data.columns %}
+                                <option value="{{ column }}" {% if column == 'اسم البند' %}selected{% endif %}>{{ column }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="description_column" class="form-label">عمود الوصف (اختياري)</label>
+                            <select class="form-select" id="description_column" name="description_column">
+                                <option value="">لا يوجد</option>
+                                {% for column in preview_data.columns %}
+                                <option value="{{ column }}" {% if column == 'الوصف' %}selected{% endif %}>{{ column }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="required_column" class="form-label">عمود مطلوب للفحص (اختياري)</label>
+                            <select class="form-select" id="required_column" name="required_column">
+                                <option value="">لا يوجد</option>
+                                {% for column in preview_data.columns %}
+                                <option value="{{ column }}" {% if column == 'مطلوب للفحص' %}selected{% endif %}>{{ column }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-1"></i> تأكيد الاستيراد
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

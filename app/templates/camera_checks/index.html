@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-video me-2"></i>تشيك كاميرات جديد</h5>
+                    <div>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-right me-1"></i> رجوع للصفحة الرئيسية
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('camera_checks.index') }}">
+                        {{ form.csrf_token }}
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="club_id" class="form-label fw-bold">{{ form.club_id.label }}</label>
+                                    {{ form.club_id(class="form-select", style="text-align: right;") }}
+                                    {% if form.club_id.errors %}
+                                        {% for error in form.club_id.errors %}
+                                            <div class="text-danger">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header" style="background-color: #e0e0e0;">
+                                <h6 class="mb-0" style="color: #000000;">أوقات فحص الكاميرات</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center">
+                                        <thead>
+                                            <tr style="background-color: #000000;">
+                                                <th style="color: #000000;background:rgb(248, 248, 248); font-size: 16px; font-weight: bold;">النادي</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">الافتتاح</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">12:00</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">02:00</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">03:00</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">05:00</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">08:00</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">10:00</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">11:00</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">11:50</th>
+                                                <th style="color: #000000; background:rgb(248, 248, 248);font-size: 16px; font-weight: bold;">مجموع المخالفات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <select class="form-select" disabled>
+                                                        <option>اختر النادي أولاً</option>
+                                                    </select>
+                                                </td>
+                                                <td>{{ form.opening_check(class="form-check-input") }}</td>
+                                                <td>{{ form.check_12(class="form-check-input") }}</td>
+                                                <td>{{ form.check_2(class="form-check-input") }}</td>
+                                                <td>{{ form.check_3(class="form-check-input") }}</td>
+                                                <td>{{ form.check_5(class="form-check-input") }}</td>
+                                                <td>{{ form.check_8(class="form-check-input") }}</td>
+                                                <td>{{ form.check_10(class="form-check-input") }}</td>
+                                                <td>{{ form.check_11(class="form-check-input") }}</td>
+                                                <td>{{ form.check_1150(class="form-check-input") }}</td>
+                                                <td class="align-middle">
+                                                    {{ form.violations_count(class="form-control text-center mx-auto", style="width: 120px;") }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="notes" class="form-label fw-bold">{{ form.notes.label }}</label>
+                                    {{ form.notes(class="form-control", rows=3) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end" >
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تحديث اسم النادي في الجدول عند تغيير النادي المحدد
+        const clubSelect = document.getElementById('club_id');
+        const tableClubCell = document.querySelector('tbody tr td:first-child select');
+
+        clubSelect.addEventListener('change', function() {
+            if (this.selectedIndex > 0) {
+                const selectedOption = this.options[this.selectedIndex];
+                tableClubCell.innerHTML = `<option>${selectedOption.text}</option>`;
+            } else {
+                tableClubCell.innerHTML = `<option>اختر النادي أولاً</option>`;
+            }
+        });
+
+        // تحديث اسم النادي عند تحميل الصفحة إذا كان هناك نادي محدد بالفعل
+        if (clubSelect.selectedIndex > 0) {
+            const selectedOption = clubSelect.options[clubSelect.selectedIndex];
+            tableClubCell.innerHTML = `<option>${selectedOption.text}</option>`;
+        }
+    });
+</script>
+{% endblock %}

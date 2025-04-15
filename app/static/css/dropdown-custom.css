@@ -1,0 +1,107 @@
+/* تنسيقات مخصصة للقوائم المنسدلة */
+
+/* تنسيق القائمة المنسدلة نفسها */
+.dropdown-menu {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    margin-top: 8px;
+    min-width: 200px;
+    animation: fadeIn 0.2s ease-in-out;
+    border-top: 2px solid #FFD700; /* أصفر ذهبي */
+}
+
+/* تأثير ظهور القائمة المنسدلة */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تنسيق عناصر القائمة المنسدلة */
+.dropdown-item {
+    padding: 8px 16px;
+    color: #495057;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    border-right: 3px solid transparent;
+}
+
+/* تنسيق عناصر القائمة المنسدلة عند المرور عليها */
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #000000; /* أسود */
+    border-right: 2px solid #FFD700; /* أصفر ذهبي */
+    padding-right: 20px;
+    text-decoration: none !important;
+}
+
+/* تنسيق عناصر القائمة المنسدلة النشطة */
+.dropdown-item.active {
+    background-color: #000000; /* أسود */
+    color: #FFFFFF; /* أبيض */
+    border-right: 2px solid #FFD700; /* أصفر ذهبي */
+}
+
+/* تنسيق الأيقونات في القائمة المنسدلة */
+.dropdown-item i {
+    width: 24px;
+    text-align: center;
+    margin-left: 8px;
+    color: #6c757d;
+    transition: all 0.2s ease;
+}
+
+/* تنسيق الأيقونات عند المرور على العنصر */
+.dropdown-item:hover i {
+    color: #0d6efd;
+    transform: translateX(-3px);
+}
+
+/* تنسيق زر القائمة المنسدلة */
+.nav-link.dropdown-toggle {
+    position: relative;
+    padding-left: 25px; /* زيادة المسافة للسهم */
+    padding-right: 12px; /* إضافة مسافة لليمين */
+}
+
+/* تنسيق السهم في زر القائمة المنسدلة */
+.nav-link.dropdown-toggle::after {
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-40%);
+    transition: transform 0.2s ease;
+    margin-right: 0; /* إزالة الهامش الافتراضي */
+}
+
+/* تنسيق السهم عند فتح القائمة المنسدلة */
+.nav-link.dropdown-toggle[aria-expanded="true"]::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* تنسيق الأيقونة في زر القائمة المنسدلة */
+.nav-link.dropdown-toggle i {
+    margin-left: 6px;
+}
+
+/* تنسيق فاصل القائمة المنسدلة */
+.dropdown-divider {
+    margin: 6px 0;
+    border-top: 1px solid #e9ecef;
+}
+
+/* تنسيق رأس القائمة المنسدلة */
+.dropdown-header {
+    color: #6c757d;
+    font-weight: 600;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}

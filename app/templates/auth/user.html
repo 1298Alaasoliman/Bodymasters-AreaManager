@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-user me-2"></i>تفاصيل المستخدم</h4>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('auth.users') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة المستخدمين
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>معلومات المستخدم</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle mx-auto mb-3">
+                        <span class="avatar-text">{{ user.username[0] | upper }}</span>
+                    </div>
+                    <h4>{{ user.username }}</h4>
+                    <p class="text-muted">
+                        {% if user.role == 'admin' %}
+                        <span class="badge bg-danger">مسؤول</span>
+                        {% elif user.role == 'manager' %}
+                        <span class="badge bg-warning">مدير</span>
+                        {% else %}
+                        <span class="badge bg-info">مستخدم</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-user me-2"></i>الاسم:</span>
+                        <span>{{ user.email }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-id-badge me-2"></i>الرقم الوظيفي:</span>
+                        <span>{{ user.employee_number }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-toggle-on me-2"></i>الحالة:</span>
+                        <span>
+                            {% if user.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                            {% else %}
+                            <span class="badge bg-secondary">غير نشط</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calendar-alt me-2"></i>تاريخ الإنشاء:</span>
+                        <span class="format-datetime">{{ user.created_at }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-sign-in-alt me-2"></i>آخر تسجيل دخول:</span>
+                        <span>
+                            {% if user.last_login %}
+                            <span class="format-datetime">{{ user.last_login }}</span>
+                            {% else %}
+                            <span class="text-muted">لم يسجل الدخول بعد</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                {% if current_user.id == user.id %}
+                <a href="{{ url_for('auth.change_password') }}" class="btn btn-warning w-100">
+                    <i class="fas fa-key me-1"></i> تغيير كلمة المرور
+                </a>
+                {% elif current_user.role == 'admin' %}
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn {% if user.is_active %}btn-warning{% else %}btn-success{% endif %} w-100">
+                        <i class="fas {% if user.is_active %}fa-ban{% else %}fa-check{% endif %} me-1"></i>
+                        {% if user.is_active %}تعطيل الحساب{% else %}تفعيل الحساب{% endif %}
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        {% if current_user.role == 'admin' %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-building me-2"></i>النوادي المتاحة</h5>
+            </div>
+            <div class="card-body">
+                {% if user.clubs %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم النادي</th>
+                                <th>الموقع</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for club in user.clubs %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ club.name }}</td>
+                                <td>{{ club.location }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">لا توجد أندية متاحة لهذا المستخدم.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">لا توجد أندية متاحة لهذا المستخدم.</p>
+                {% endif %}
+
+                <div class="mt-3">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <select name="club_id" class="form-select" required>
+                                <option value="">اختر النادي...</option>
+                                {% for club in available_clubs %}
+                                <option value="{{ club.id }}">{{ club.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-primary w-100">
+                                <i class="fas fa-plus me-1"></i> إضافة نادي
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-lock me-2"></i>الصلاحيات</h5>
+            </div>
+            <div class="card-body">
+                <form id="permissionsForm" action="{{ url_for('auth.save_detailed_permissions', id=user.id) }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- الصلاحيات التفصيلية -->
+                    <div class="accordion" id="permissionsAccordion">
+                        {% set pages = {} %}
+                        {% for permission in detailed_permissions %}
+                            {% if permission.page_name not in pages %}
+                                {% set _ = pages.update({permission.page_name: []}) %}
+                            {% endif %}
+                            {% set _ = pages[permission.page_name].append(permission) %}
+                        {% endfor %}
+
+                        {% for page_name, page_permissions in pages.items() %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                                    <strong>{{ page_name }}</strong> - {{ page_permissions[0].page_description }}
+                                </button>
+                            </h2>
+                            <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#permissionsAccordion">
+                                <div class="accordion-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>الإجراء / الزر</th>
+                                                    <th>الوصف</th>
+                                                    <th>الصلاحية</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for permission in page_permissions %}
+                                                <tr>
+                                                    <td>{{ permission.action_name }}</td>
+                                                    <td>{{ permission.action_description }}</td>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" name="detailed_permissions[{{ permission.id }}]" id="perm_{{ permission.id }}" {% if permission in user.detailed_permissions and permission.is_allowed %}checked{% endif %}>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> حفظ الصلاحيات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-building me-2"></i>النوادي المتاحة</h5>
+            </div>
+            <div class="card-body">
+                {% if user.clubs %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم النادي</th>
+                                <th>الموقع</th>
+                                <th>مدير النادي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for club in user.clubs %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ club.name }}</td>
+                                <td>{{ club.location }}</td>
+                                <td>{{ club.manager_name }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">لا توجد أندية متاحة لك.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">لا توجد أندية متاحة لك.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color:rgb(187, 185, 185);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .avatar-text {
+        font-size: 48px;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

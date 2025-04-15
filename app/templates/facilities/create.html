@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-plus-circle me-2"></i>إضافة مرفق جديد</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('facilities.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة المرافق
+        </a>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>معلومات المرفق</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{{ url_for('facilities.create') }}">
+            {{ form.hidden_tag() }}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="أدخل اسم المرفق") }}
+                        {% for error in form.name.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.club_id.label(class="form-label") }}
+                        {{ form.club_id(class="form-select" + (" is-invalid" if form.club_id.errors else "")) }}
+                        {% for error in form.club_id.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.facility_type.label(class="form-label") }}
+                        {{ form.facility_type(class="form-select" + (" is-invalid" if form.facility_type.errors else "")) }}
+                        {% for error in form.facility_type.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.location.label(class="form-label") }}
+                        {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else ""), placeholder="أدخل موقع المرفق داخل النادي") }}
+                        {% for error in form.location.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), placeholder="أدخل وصف المرفق", rows=3) }}
+                {% for error in form.description.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3 form-check">
+                {{ form.is_active(class="form-check-input") }}
+                {{ form.is_active.label(class="form-check-label") }}
+            </div>
+            <div class="d-grid gap-2">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

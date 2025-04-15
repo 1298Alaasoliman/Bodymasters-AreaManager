@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}استيراد أنواع المرافق من الإكسيل{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3 class="h3 mb-0 text-gray-800">استيراد أنواع المرافق من الإكسيل</h3>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{{ url_for('facility_types.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة أنواع المرافق
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow mb-4 border-0 rounded-3">
+            <div class="card-header bg-primary text-white rounded-top">
+                <h5 class="mb-0"><i class="fas fa-file-excel me-2"></i>استيراد أنواع المرافق</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>تعليمات الاستيراد</h5>
+                    <p>يرجى اتباع التعليمات التالية لاستيراد أنواع المرافق من ملف إكسيل:</p>
+                    <ol>
+                        <li>يجب أن يحتوي ملف الإكسيل على عمود واحد على الأقل بعنوان "اسم المرفق".</li>
+                        <li>يمكن أن يحتوي الملف على عمود اختياري بعنوان "الحالة" (نشط/غير نشط).</li>
+                        <li>سيتم تجاهل أي أعمدة أخرى في الملف.</li>
+                        <li>سيتم إضافة أنواع المرافق الجديدة فقط، ولن يتم تحديث أنواع المرافق الموجودة.</li>
+                    </ol>
+                </div>
+
+                <form method="post" action="{{ url_for('facility_types.import_excel') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="excel_file" class="form-label">ملف الإكسيل</label>
+                        <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx, .xls" required>
+                        <div class="form-text">يجب أن يكون الملف بصيغة .xlsx أو .xls</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i> استيراد
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if preview_data %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">معاينة البيانات</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                {% for column in preview_data.columns %}
+                                <th>{{ column }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in preview_data.data %}
+                            <tr>
+                                {% for cell in row %}
+                                <td>{{ cell }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <form method="post" action="{{ url_for('facility_types.import_excel_confirm') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="file_path" value="{{ file_path }}">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="name_column" class="form-label">عمود اسم المرفق</label>
+                            <select class="form-select" id="name_column" name="name_column" required>
+                                <option value="">اختر العمود...</option>
+                                {% for column in preview_data.columns %}
+                                <option value="{{ column }}" {% if column == 'اسم المرفق' %}selected{% endif %}>{{ column }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status_column" class="form-label">عمود الحالة (اختياري)</label>
+                            <select class="form-select" id="status_column" name="status_column">
+                                <option value="">لا يوجد</option>
+                                {% for column in preview_data.columns %}
+                                <option value="{{ column }}" {% if column == 'الحالة' %}selected{% endif %}>{{ column }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-1"></i> تأكيد الاستيراد
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

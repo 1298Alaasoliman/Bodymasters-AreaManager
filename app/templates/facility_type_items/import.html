@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}استيراد بنود نوع المرفق: {{ facility_type.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3 class="h3 mb-0 text-gray-800">استيراد بنود نوع المرفق: {{ facility_type.name }}</h3>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{{ url_for('facility_type_items.index', facility_type_id=facility_type.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة البنود
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow mb-4 border-0 rounded-3">
+            <div class="card-header bg-primary text-white rounded-top">
+                <h5 class="mb-0"><i class="fas fa-file-excel me-2"></i>استيراد بنود نوع المرفق</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>تعليمات الاستيراد</h5>
+                    <p>يرجى اتباع التعليمات التالية لاستيراد بنود نوع المرفق من ملف إكسيل:</p>
+                    <ol>
+                        <li>يجب أن يحتوي ملف الإكسيل على عمود واحد على الأقل بعنوان "اسم البند".</li>
+                        <li>يمكن أن يحتوي الملف على عمود اختياري بعنوان "الوصف".</li>
+                        <li>يمكن أن يحتوي الملف على عمود اختياري بعنوان "مطلوب للفحص" (نعم/لا).</li>
+                        <li>سيتم تجاهل أي أعمدة أخرى في الملف.</li>
+                        <li>سيتم إضافة البنود الجديدة فقط، ولن يتم تحديث البنود الموجودة.</li>
+                    </ol>
+                </div>
+
+                <form method="post" action="{{ url_for('facility_type_items.import_excel', facility_type_id=facility_type.id) }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="excel_file" class="form-label">{{ form.excel_file.label.text }} <span class="text-danger">*</span></label>
+                        {{ form.excel_file(class="form-control" + (" is-invalid" if form.excel_file.errors else ""), id="excel_file") }}
+                        <div class="form-text">يجب أن يكون الملف بصيغة .xlsx أو .xls</div>
+                        {% if form.excel_file.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.excel_file.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

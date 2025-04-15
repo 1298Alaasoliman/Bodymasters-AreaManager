@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-users me-2"></i>الموظفين <span class="badge bg-primary">{{ employees_count }}</span></h4>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if current_user.role == 'admin' or current_user.has_permission('employees', 'can_create') %}
+        <a href="{{ url_for('employees.create') }}" class="btn btn-primary me-2">
+            <i class="fas fa-user-plus me-1"></i> إضافة موظف
+        </a>
+        <a href="{{ url_for('employees.import_employees') }}" class="btn btn-success">
+            <i class="fas fa-file-import me-1"></i> استيراد
+        </a>
+        {% if current_user.role == 'admin' %}
+        <button id="deleteMultipleBtn" class="btn btn-danger" style="display: none;">
+            <i class="fas fa-trash-alt me-1"></i> حذف المحدد
+        </button>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow" >
+    <div class="card-header bg-primary text-white" style="background:rgb(231, 231, 231);">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0" ><i class="fas fa-list me-2" ></i>قائمة الموظفين</h5>
+            </div>
+            <div class="col-auto" >
+                <input type="text" id="tableSearch" class="form-control form-control-sm" placeholder="بحث..." data-table="#employeesTable">
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm" id="employeesTable" style="font-weight: bold; font-size: 0.8rem;">
+                <thead class="table-light" style="line-height: 1.2;">
+                    <tr>
+                        {% if current_user.role == 'admin' %}
+                        <th class="text-center" style="width: 30px; background:rgb(231, 231, 231);">
+                            <input type="checkbox" id="selectAll" class="form-check-input">
+                        </th>
+                        {% endif %}
+                        <th class="text-center" style="width: 40px; background:rgb(231, 231, 231);">#</th>
+                        <th class="text-center" style="width: 80px; background:rgb(231, 231, 231);">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <span>الرقم الوظيفي</span>
+                                <div class="ms-2 filter-icon">
+                                    <i class="fas fa-filter" data-column="1"></i>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="text-center" style="width: 180px; background:rgb(231, 231, 231);">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <span>اسم الموظف</span>
+                                <div class="ms-2 filter-icon">
+                                    <i class="fas fa-filter" data-column="2"></i>
+                                </div>
+                            </div>
+                        </th>
+                        <!-- تم إخفاء عمود المسمى الوظيفي بناءً على طلب المستخدم -->
+                        <!-- <th class="text-center">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <span>المسمى الوظيفي</span>
+                                <div class="ms-2 filter-icon">
+                                    <i class="fas fa-filter" data-column="3"></i>
+                                </div>
+                            </div>
+                        </th> -->
+                        <th class="text-center" style="width: 180px; background:rgb(231, 231, 231);">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <span>الدور الوظيفي</span>
+                                <div class="ms-2 filter-icon">
+                                    <i class="fas fa-filter" data-column="3"></i>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="text-center" style="width: 150px; background:rgb(231, 231, 231);">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <span>النادي</span>
+                                <div class="ms-2 filter-icon">
+                                    <i class="fas fa-filter" data-column="4"></i>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="text-center" style="width: 60px; background:rgb(231, 231, 231);">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <span>الحالة</span>
+                                <div class="ms-2 filter-icon">
+                                    <i class="fas fa-filter" data-column="5"></i>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="text-center" style="width: 120px; background:rgb(231, 231, 231);">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody style="line-height: 1.2;">
+                    {% for employee in employees %}
+                    <tr>
+                        {% if current_user.role == 'admin' %}
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input employee-checkbox" data-id="{{ employee.id }}" data-name="{{ employee.name }}">
+                        </td>
+                        {% endif %}
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td class="text-center">{{ employee.employee_number }}</td>
+                        <td class="text-center">{{ employee.name }}</td>
+                        <!-- تم إخفاء عمود المسمى الوظيفي -->
+                        <!-- <td>{{ employee.position }}</td> -->
+                        <td class="text-center">{{ employee.role }}</td>
+                        <td class="text-center">{{ employee.club.name }}</td>
+                        <td class="text-center">
+                            {% if employee.is_active %}
+                            <span class="badge bg-success" style="font-size: 0.75rem; padding: 0.2rem 0.4rem;">نشط</span>
+                            {% else %}
+                            <span class="badge bg-secondary" style="font-size: 0.75rem; padding: 0.2rem 0.4rem;">غير نشط</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('employees.view', id=employee.id) }}" class="btn btn-sm btn-info" style="padding: 0.2rem 0.4rem;">
+                                <i class="fas fa-eye" style="font-size: 0.8rem;"></i>
+                            </a>
+
+                            {% if current_user.role == 'admin' or current_user.has_permission('employees', 'can_edit') %}
+                            <a href="{{ url_for('employees.edit', id=employee.id) }}" class="btn btn-sm btn-warning" style="padding: 0.2rem 0.4rem;">
+                                <i class="fas fa-edit" style="font-size: 0.8rem;"></i>
+                            </a>
+                            {% endif %}
+                            {% if current_user.role == 'admin' or current_user.has_permission('employees', 'can_delete') %}
+                            <form action="{{ url_for('employees.delete', id=employee.id) }}" method="post" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.2rem 0.4rem;" onclick="return confirmDelete(event, 'هل أنت متأكد من حذف هذا الموظف؟')">
+                                    <i class="fas fa-trash" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="{% if current_user.role == 'admin' %}10{% else %}9{% endif %}" class="text-center">لا يوجد موظفين.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer text-center">
+        <a href="{{ url_for('employees.report') }}" class="btn btn-primary">
+            <i class="fas fa-chart-bar me-1"></i> تقرير الموظفين
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // زر تحديد الكل
+        const selectAllCheckbox = document.getElementById('selectAll');
+        // زر حذف المحدد
+        const deleteMultipleBtn = document.getElementById('deleteMultipleBtn');
+        // خانات اختيار الموظفين
+        const employeeCheckboxes = document.querySelectorAll('.employee-checkbox');
+        // تأكيد حذف موظف واحد
+        function confirmDelete(event, message) {
+            if (!confirm(message)) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+
+        // تحديد/إلغاء تحديد جميع الموظفين
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                employeeCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                updateDeleteButton();
+            });
+        }
+
+        // تحديث حالة زر الحذف عند تغيير حالة أي خانة اختيار
+        employeeCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateDeleteButton();
+
+                // تحديث حالة خانة "تحديد الكل" إذا تم تحديد/إلغاء تحديد جميع الموظفين
+                if (selectAllCheckbox) {
+                    const allChecked = Array.from(employeeCheckboxes).every(cb => cb.checked);
+                    const noneChecked = Array.from(employeeCheckboxes).every(cb => !cb.checked);
+
+                    if (allChecked) {
+                        selectAllCheckbox.checked = true;
+                        selectAllCheckbox.indeterminate = false;
+                    } else if (noneChecked) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    } else {
+                        selectAllCheckbox.indeterminate = true;
+                    }
+                }
+            });
+        });
+
+        // تحديث حالة زر الحذف (إظهار/إخفاء)
+        function updateDeleteButton() {
+            if (deleteMultipleBtn) {
+                const checkedCount = document.querySelectorAll('.employee-checkbox:checked').length;
+                if (checkedCount > 0) {
+                    deleteMultipleBtn.style.display = 'inline-block';
+                    deleteMultipleBtn.textContent = `حذف المحدد (${checkedCount})`;
+                } else {
+                    deleteMultipleBtn.style.display = 'none';
+                }
+            }
+        }
+
+        // معالجة نقر زر حذف المحدد
+        if (deleteMultipleBtn) {
+            deleteMultipleBtn.addEventListener('click', function() {
+                const selectedEmployees = [];
+                const selectedEmployeeNames = [];
+
+                // جمع معرفات وأسماء الموظفين المحددين
+                document.querySelectorAll('.employee-checkbox:checked').forEach(checkbox => {
+                    selectedEmployees.push(checkbox.dataset.id);
+                    selectedEmployeeNames.push(checkbox.dataset.name);
+                });
+
+                if (selectedEmployees.length === 0) {
+                    alert('الرجاء تحديد موظف واحد على الأقل للحذف');
+                    return;
+                }
+
+                // تأكيد الحذف
+                const confirmMessage = `هل أنت متأكد من حذف الموظفين التاليين؟\n${selectedEmployeeNames.join('\n')}`;
+                if (confirm(confirmMessage)) {
+                    // إرسال طلب الحذف
+                    fetch('{{ url_for("employees.delete_multiple") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            employee_ids: selectedEmployees
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            // إعادة تحميل الصفحة لتحديث القائمة
+                            window.location.reload();
+                        } else {
+                            alert('خطأ: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء معالجة الطلب');
+                    });
+                }
+            });
+        }
+
+        // تحديث حالة زر الحذف عند تحميل الصفحة
+        updateDeleteButton();
+
+        // تعريف الدالة للاستخدام العام
+        window.confirmDelete = confirmDelete;
+    });
+</script>
+{% endblock %}

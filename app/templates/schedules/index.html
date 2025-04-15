@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-calendar-alt me-2"></i>جدول سير العمل</h4>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-building me-2"></i>اختر النادي</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for club in clubs %}
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('schedules.club_schedules', club_id=club.id) }}" class="btn btn-outline-primary btn-block w-100 py-3">
+                            <i class="fas fa-building me-2"></i>{{ club.name }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if selected_club %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>جدول سير العمل {{ selected_club.name }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <a href="{{ url_for('schedules.club_schedules', club_id=selected_club.id) }}" class="btn btn-primary">
+                        <i class="fas fa-eye me-1"></i> عرض جدول سير العمل
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

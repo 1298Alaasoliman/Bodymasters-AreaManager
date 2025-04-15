@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-calendar-check me-2"></i>تعديل سجل دوام: {{ employee.name }}</h4>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('employees.view', id=employee.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة
+        </a>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-edit me-2"></i>تعديل سجل دوام</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('employees.edit_work_record', record_id=work_record.id) }}">
+            {{ form.hidden_tag() }}
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">معلومات الموظف</h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th class="text-start">الاسم:</th>
+                                    <td class="text-end">{{ employee.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-start">الرقم الوظيفي:</th>
+                                    <td class="text-end">{{ employee.employee_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-start">المسمى الوظيفي:</th>
+                                    <td class="text-end">{{ employee.position }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-start">النادي:</th>
+                                    <td class="text-end">{{ employee.club.name }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">تفاصيل الدوام</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                {{ form.date.label(class="form-label") }}
+                                {{ form.date(class="form-control datepicker", type="date") }}
+                                {% if form.date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.date.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.time_in.label(class="form-label") }}
+                                {{ form.time_in(class="form-control", type="time") }}
+                                {% if form.time_in.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.time_in.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.time_out.label(class="form-label") }}
+                                {{ form.time_out(class="form-control", type="time") }}
+                                {% if form.time_out.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.time_out.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                {{ form.is_leave(class="form-check-input") }}
+                                {{ form.is_leave.label(class="form-check-label") }}
+                            </div>
+
+                            <div class="mb-3" id="leave-type-container">
+                                {{ form.leave_type.label(class="form-label") }}
+                                {{ form.leave_type(class="form-select") }}
+                                {% if form.leave_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.leave_type.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">ملاحظات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.notes(class="form-control", rows=3) }}
+                        {% if form.notes.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.notes.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const isLeaveCheckbox = document.getElementById('is_leave');
+        const leaveTypeContainer = document.getElementById('leave-type-container');
+        const timeInField = document.getElementById('time_in');
+        const timeOutField = document.getElementById('time_out');
+
+        // تحديث عرض حقول الإجازة بناءً على حالة الإجازة
+        function updateLeaveFields() {
+            if (isLeaveCheckbox.checked) {
+                leaveTypeContainer.style.display = 'block';
+                timeInField.disabled = true;
+                timeOutField.disabled = true;
+            } else {
+                leaveTypeContainer.style.display = 'none';
+                timeInField.disabled = false;
+                timeOutField.disabled = false;
+            }
+        }
+
+        // تنفيذ الدالة عند تحميل الصفحة
+        updateLeaveFields();
+
+        // تنفيذ الدالة عند تغيير حالة الإجازة
+        isLeaveCheckbox.addEventListener('change', updateLeaveFields);
+    });
+</script>
+{% endblock %}

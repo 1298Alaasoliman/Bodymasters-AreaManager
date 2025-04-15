@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<!-- إضافة مكتبة Flatpickr لاختيار التاريخ -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/light.css">
+<style>
+    /* تنسيق حقول التاريخ */
+    .custom-datepicker {
+        text-align: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        direction: ltr !important;
+        unicode-bidi: isolate !important;
+        background-color: white;
+        color: #333;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        width: 100% !important;
+        min-width: 250px !important;
+    }
+
+    /* زيادة عرض عمود حقول التاريخ */
+    .date-field-column {
+        min-width: 220px !important;
+        width: auto !important;
+        flex: 0 0 300px !important;
+    }
+
+    /* زيادة ارتفاع البطاقة لاستيعاب قائمة التاريخ */
+    .violations-card {
+        min-height: 650px !important;
+        margin-bottom: 50px !important;
+    }
+
+    /* تغيير لون الحدود عند التركيز */
+    .custom-datepicker:focus {
+        border-color:rgb(26, 35, 209);
+        box-shadow: 0 0 0 0.2rem rgba(18, 15, 200, 0.25);
+        outline: none;
+    }
+
+    /* تنسيق مكتبة Flatpickr */
+    .flatpickr-calendar {
+        background-color: white !important;
+        color: #333 !important;
+        border: 1px solidrgb(145, 175, 205) !important;
+        border-radius: 4px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .flatpickr-day {
+        color: #333 !important;
+        border-radius: 5px !important;
+    }
+
+    .flatpickr-day.selected {
+        background-color:rgb(80, 122, 236) !important;
+        border-color:rgb(80, 122, 236) !important;
+        color: white !important;
+    }
+
+    .flatpickr-day:hover {
+        background-color: #f8f9fa !important;
+    }
+
+    .flatpickr-day.today {
+        border-color:rgb(80, 122, 236) !important;
+    }
+
+    .flatpickr-months .flatpickr-month {
+        background-color: #f8f9fa !important;
+        color: #333 !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background-color: #f8f9fa !important;
+        color: #333 !important;
+    }
+
+    .flatpickr-weekday {
+        color:rgb(80, 122, 236) !important;
+        font-weight: bold !important;
+    }
+
+    .flatpickr-prev-month, .flatpickr-next-month {
+        color: #333 !important;
+        fill: #333 !important;
+    }
+
+    .flatpickr-time {
+        background-color: #f8f9fa !important;
+    }
+
+    .numInputWrapper input {
+        color: #333 !important;
+    }
+
+    .flatpickr-calendar.arrowTop:before,
+    .flatpickr-calendar.arrowTop:after {
+        border-bottom-color: white !important;
+    }
+
+    /* إضافة أيقونة التقويم */
+    .date-input-container {
+        position: relative;
+    }
+
+    .date-input-container:after {
+        content: '\f073';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color:rgb(80, 122, 236);
+        pointer-events: none;
+    }
+
+    /* إخفاء أيقونة التقويم الافتراضية */
+    ::-webkit-calendar-picker-indicator {
+        display: none !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* إخفاء أيقونة التقويم الإضافية من Flatpickr */
+    .flatpickr-calendar .flatpickr-months .flatpickr-prev-month.flatpickr-prev-month,
+    .flatpickr-calendar .flatpickr-months .flatpickr-next-month.flatpickr-next-month {
+        position: absolute;
+    }
+
+    /* إزالة الأيقونة المكررة من حقول التاريخ */
+    .flatpickr-input[readonly] {
+        background-color: white !important;
+        background-image: none !important;
+    }
+
+    /* إزالة الأيقونة المكررة من حقول التاريخ */
+    .flatpickr-calendar:after {
+        display: none !important;
+    }
+
+    /* إزالة الأيقونة المكررة من حقول التاريخ */
+    .flatpickr-input.form-control {
+        background-image: none !important;
+    }
+
+    /* إزالة الأيقونة المكررة من حقول التاريخ */
+    input.flatpickr-input {
+        background-image: none !important;
+    }
+
+    /* تنسيق إضافي لقائمة التاريخ المنسدلة */
+    .flatpickr-calendar {
+        z-index: 9999 !important;
+        position: absolute !important;
+        margin-top: 2px !important;
+    }
+
+    /* تأكد من أن القائمة المنسدلة تظهر بشكل كامل */
+    .flatpickr-calendar.open {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow violations-card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" style="font-family: 'Cairo', sans-serif; font-weight: normal;"><i class="fas fa-exclamation-triangle me-2"></i>تسجيل مخالفة جديدة</h5>
+                    <div>
+                        <a href="{{ url_for('violations.index') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-right me-1"></i> رجوع
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body" style="padding-bottom: 100px;">
+                    <form method="POST" action="{{ url_for('violations.create') }}">
+                        {{ form.csrf_token }}
+
+
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    {{ form.employee_id.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.employee_id(class="form-control text-center", id="employee_id", style="width: 100%; font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold; direction: ltr;") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    {{ form.employee_name.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.employee_name(class="form-control", id="employee_name", style="width: 100%; font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    {{ form.job_role.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.job_role(class="form-control", id="job_role", style="width: 100%; font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    {{ form.employee_club.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.employee_club(class="form-control", id="employee_club", style="width: 100%; font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.violation_type_id.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.violation_type_id(class="form-select", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.source.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.source(class="form-select", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.violation_number.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.violation_number(class="form-control text-center", id="violation_number", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold; direction: ltr;") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4 date-field-column">
+                                <div class="form-group">
+                                    {{ form.violation_date.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    <div class="date-input-container">
+                                        {{ form.violation_date(class="form-control custom-datepicker text-center", type="text", dir="ltr", lang="en-US", autocomplete="off", placeholder="", id="violation_date", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold; direction: ltr;") }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label class="form-label" style="font-family: 'Cairo', sans-serif; font-weight: normal;">{{ form.employee_signature.label }}</label>
+                                    <div class="d-flex mt-2">
+                                        <div class="form-check me-4">
+                                            <input class="form-check-input" type="radio" name="{{ form.employee_signature.name }}" id="signature_yes" value="yes" required>
+                                            <label class="form-check-label" for="signature_yes" style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;">
+                                                نعم
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="{{ form.employee_signature.name }}" id="signature_no" value="no" required>
+                                            <label class="form-check-label" for="signature_no" style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;">
+                                                لا
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form.notes.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.notes(class="form-control", rows=4, style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="row">
+                            <div class="col-md-12 text-left" style="text-align: left;">
+                                {{ form.submit(class="btn btn-primary", style="font-family: 'Cairo', sans-serif; background: #007bff;  color: #fff; width: 20%; font-size: 14px; font-weight: bold; height: 110%; width: 10%;") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- إضافة مكتبة Flatpickr لاختيار التاريخ -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة حقول التاريخ باستخدام مكتبة Flatpickr
+        // تعيين اللغة الإنجليزية للتاريخ
+        document.documentElement.lang = 'en-US';
+
+        // تهيئة مكتبة Flatpickr لحقول التاريخ
+        const datePickerOptions = {
+            dateFormat: "d/m/Y",
+            locale: "en",
+            disableMobile: true,
+            allowInput: true,
+            monthSelectorType: "dropdown",
+            position: "below", // تغيير موقع القائمة لتظهر أسفل الحقل
+            static: false, // إلغاء الوضع الثابت للسماح بالتموضع الصحيح
+            showMonths: 1,
+            time_24hr: true,
+            weekNumbers: false,
+            wrap: false,
+            prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>',
+            nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
+            onChange: function(selectedDates, dateStr, instance) {
+                // تغيير لون الخلفية عند اختيار تاريخ
+                if (selectedDates.length > 0) {
+                    instance.input.classList.add('has-value');
+                } else {
+                    instance.input.classList.remove('has-value');
+                }
+            },
+            // إزالة الأيقونة المكررة
+            altInput: false,
+            altFormat: "d/m/Y",
+            // إزالة الأيقونة المكررة
+            clickOpens: true,
+            appendTo: document.body, // إضافة القائمة إلى جسم الصفحة لتجنب مشاكل القطع
+            // إزالة الأيقونة المكررة
+            showMonths: 1,
+            // إزالة الأيقونة المكررة
+            onReady: function(dateObj, dateStr, instance) {
+                // إزالة الأيقونة المكررة
+                if (instance.input.nextSibling && instance.input.nextSibling.classList && instance.input.nextSibling.classList.contains('flatpickr-mobile')) {
+                    instance.input.nextSibling.remove();
+                }
+            }
+        };
+
+        // تهيئة حقل التاريخ
+        flatpickr("#violation_date", datePickerOptions);
+
+        // إزالة الأيقونات المكررة بعد تهيئة حقول التاريخ
+        setTimeout(function() {
+            // إزالة الأيقونات المكررة
+            document.querySelectorAll('.flatpickr-input').forEach(function(input) {
+                // إزالة الأيقونة المكررة
+                input.style.backgroundImage = 'none';
+
+                // إزالة العناصر المكررة
+                if (input.nextSibling && input.nextSibling.classList && input.nextSibling.classList.contains('flatpickr-mobile')) {
+                    input.nextSibling.remove();
+                }
+            });
+        }, 500);
+
+        // جلب بيانات الموظف عند إدخال الرقم الوظيفي
+        $('#employee_id').on('blur', function() {
+            var employee_id = $(this).val();
+            if (employee_id) {
+                $.ajax({
+                    url: "{{ url_for('violations.get_employee_data') }}?employee_id=" + employee_id,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#employee_name').val(response.employee_name);
+                            $('#job_role').val(response.job_role);
+                            $('#employee_club').val(response.employee_club);
+                            $('#violation_number').val(response.violation_number);
+                        } else {
+                            alert(response.message);
+                            $('#employee_name').val('');
+                            $('#job_role').val('');
+                            $('#employee_club').val('');
+                            $('#violation_number').val('');
+                        }
+                    },
+                    error: function() {
+                        alert('حدث خطأ أثناء جلب بيانات الموظف');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

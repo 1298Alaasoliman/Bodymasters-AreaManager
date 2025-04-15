@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-user-plus me-2"></i>إضافة موظف جديد</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('employees.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة الموظفين
+        </a>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>معلومات الموظف</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{{ url_for('employees.create') }}">
+            {{ form.hidden_tag() }}
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.employee_number.label(class="form-label fw-bold") }}
+                        {{ form.employee_number(class="form-control" + (" is-invalid" if form.employee_number.errors else ""), placeholder="أدخل الرقم الوظيفي") }}
+                        {% for error in form.employee_number.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label fw-bold") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="أدخل اسم الموظف") }}
+                        {% for error in form.name.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.position.label(class="form-label fw-bold") }}
+                        {{ form.position(class="form-select" + (" is-invalid" if form.position.errors else ""), id="position") }}
+                        {% for error in form.position.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">الدور الوظيفي</label>
+                        {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                        {% for error in form.role.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.club_id.label(class="form-label fw-bold") }}
+                        {{ form.club_id(class="form-select" + (" is-invalid" if form.club_id.errors else "")) }}
+                        {% for error in form.club_id.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">الحالة</label>
+                        <div>
+                            <select name="is_active" id="is_active" class="form-select">
+                                <option value="1" selected>يعمل</option>
+                                <option value="0">مجاز</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('employees.index') }}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const positionSelect = document.getElementById('position');
+        const roleSelect = document.getElementById('role');
+
+        // تعريف الأدوار الوظيفية لكل مسمى وظيفي
+        const rolesByPosition = {
+            'مدير النادي': [
+                'مدير نادي',
+                'مدير نادي مكلف',
+                'نائب مدير نادي',
+                'نائب مدير نادي مكلف'
+            ],
+            'خدمة عملاء': [
+                'خدمة عملاء',
+                'منسق عمليات',
+                'اختصاصي تسويق',
+                'اختصاصي تسويق مكلف'
+            ],
+            'مدرب': [
+                'مدرب',
+                'مدرب كمال أجسام',
+                'مدرب سباحة',
+                'مدرب لياقة',
+                'مدير لياقة',
+                'مدرب رياضي',
+                'مدرب لياقة وكمال اجسام',
+                'مساعد مدرب'
+            ],
+            'عامل': [
+                'مشرف عمال',
+                'عامل نظافة',
+                'عامل مغسلة'
+            ]
+        };
+
+        // وظيفة لتحديث خيارات الدور الوظيفي
+        function updateRoleOptions() {
+            const selectedPosition = positionSelect.value;
+
+            // حذف جميع الخيارات الحالية
+            roleSelect.innerHTML = '';
+
+            // إضافة خيار فارغ
+            const emptyOption = document.createElement('option');
+            emptyOption.value = '';
+            emptyOption.textContent = 'اختر الدور الوظيفي...';
+            roleSelect.appendChild(emptyOption);
+
+            // إذا تم اختيار مسمى وظيفي، أضف الأدوار المناسبة
+            if (selectedPosition && rolesByPosition[selectedPosition]) {
+                rolesByPosition[selectedPosition].forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role;
+                    option.textContent = role;
+                    roleSelect.appendChild(option);
+                });
+            }
+        }
+
+        // تحديث الخيارات عند تغيير المسمى الوظيفي
+        positionSelect.addEventListener('change', updateRoleOptions);
+
+        // تحديث الخيارات عند تحميل الصفحة
+        updateRoleOptions();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    /* تنسيق حقول الإدخال */
+    .form-control[dir="ltr"] {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* تنسيق حقل النادي */
+    #club_id {
+        text-align: right !important;
+        direction: rtl !important;
+    }
+
+    #club_id option {
+        text-align: right !important;
+        direction: rtl !important;
+    }
+
+    /* تنسيق حقل الشهر */
+    select.form-control option {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        direction: ltr;
+        text-align: left;
+    }
+
+    /* تنسيق حقل السنة */
+    input[type="number"], input[readonly] {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        direction: ltr !important;
+        text-align: center !important;
+        font-size: 14px;
+        font-weight: normal;
+        background-color: #f8f9fa;
+        cursor: default;
+    }
+
+    /* تنسيق خلايا الجدول */
+    td[dir="ltr"] {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">إضافة تارجت شهري</h1>
+        <a href="{{ url_for('daily_revenue.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> العودة
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- نموذج إضافة التارجت -->
+        <div class="col-md-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary">
+                    <h6 class="m-0 font-weight-bold text-white">بيانات التارجت الشهري</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('daily_revenue.create_target') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form.club_id.label(class="form-label") }}
+                                    {{ form.club_id(class="form-control text-right") }}
+                                    {% if form.club_id.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.club_id.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.month.label(class="form-label") }}
+                                    {{ form.month(class="form-control text-right", dir="ltr") }}
+                                    {% if form.month.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.month.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.year.label(class="form-label") }}
+                                    {{ form.year(class="form-control") }}
+                                    {% if form.year.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.year.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form.target_amount.label(class="form-label") }}
+                                    {{ form.target_amount(class="form-control text-center") }}
+                                    {% if form.target_amount.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.target_amount.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                {{ form.submit(class="btn btn-primary w-100") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة التارجت المسجلة -->
+        <div class="col-md-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary">
+                    <h6 class="m-0 font-weight-bold text-white">قائمة التارجت المسجلة</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="targetsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>النادي</th>
+                                    <th>الشهر</th>
+                                    <th>السنة</th>
+                                    <th>التارجت</th>
+                                    <th>الإجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if targets %}
+                                    {% for target_data in targets %}
+                                    <tr>
+                                        <td>{{ target_data.club_name }}</td>
+                                        <td dir="ltr" class="text-right">{{ months_en[target_data.MonthlyTarget.month - 1] }}</td>
+                                        <td dir="ltr" class="text-center">{{ target_data.MonthlyTarget.year }}</td>
+                                        <td class="text-center">{{ "{:,.0f}".format(target_data.MonthlyTarget.target_amount) }} ريال</td>
+                                        <td class="text-center">
+                                            <a href="#" class="btn btn-info btn-sm edit-target"
+                                               data-club-id="{{ target_data.MonthlyTarget.club_id }}"
+                                               data-month="{{ target_data.MonthlyTarget.month }}"
+                                               data-year="{{ target_data.MonthlyTarget.year }}"
+                                               data-amount="{{ target_data.MonthlyTarget.target_amount }}">
+                                                <i class="fas fa-edit"></i> تعديل
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">لا يوجد تارجت مسجل حتى الآن</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة جدول التارجت
+        $('#targetsTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Arabic.json"
+            },
+            "order": [[2, 'desc'], [1, 'desc']],
+            "pageLength": 10
+        });
+
+        // تحسين حقل السنة
+        const yearInput = document.getElementById('year');
+
+        if (yearInput) {
+            // إضافة السمات المطلوبة
+            yearInput.setAttribute('dir', 'ltr');
+            yearInput.setAttribute('readonly', 'readonly');
+            yearInput.setAttribute('inputmode', 'numeric');
+            yearInput.setAttribute('pattern', '[0-9]*');
+            yearInput.classList.add('text-center');
+            yearInput.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+            yearInput.style.fontSize = '14px';
+            yearInput.style.direction = 'ltr';
+            yearInput.style.textAlign = 'center';
+            yearInput.style.backgroundColor = '#f8f9fa';
+            yearInput.style.cursor = 'default';
+            yearInput.style.border = '1px solid #ced4da';
+            yearInput.style.borderRadius = '0.25rem';
+
+            // تحويل الأرقام العربية إلى إنجليزية
+            function convertToEnglishDigits(str) {
+                if (!str) return str;
+                const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                return str.replace(/[\u0660-\u0669]/g, match => arabicDigits.indexOf(match));
+            }
+
+            // تحويل القيمة الحالية
+            yearInput.value = convertToEnglishDigits(yearInput.value);
+
+            // منع التعديل على حقل السنة
+            yearInput.addEventListener('keydown', function(e) {
+                e.preventDefault();
+                return false;
+            });
+        }
+
+        // تحسين حقل اسم النادي
+        const clubInput = document.getElementById('club_id');
+        if (clubInput) {
+            clubInput.style.textAlign = 'right';
+
+            // تطبيق المحاذاة على جميع الخيارات في القائمة المنسدلة
+            const options = clubInput.querySelectorAll('option');
+            options.forEach(option => {
+                option.style.textAlign = 'right';
+                option.style.direction = 'rtl';
+            });
+
+            // إضافة CSS للقائمة المنسدلة
+            const style = document.createElement('style');
+            style.textContent = `
+                #club_id option {
+                    text-align: right !important;
+                    direction: rtl !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // معالجة النقر على زر التعديل
+        $('.edit-target').on('click', function(e) {
+            e.preventDefault();
+
+            // الحصول على بيانات التارجت
+            const clubId = $(this).data('club-id');
+            const month = $(this).data('month');
+            const year = $(this).data('year');
+            const amount = $(this).data('amount');
+
+            // ملء النموذج ببيانات التارجت
+            $('#club_id').val(clubId);
+            $('#month').val(month);
+            $('#year').val(year);
+            $('#target_amount').val(amount);
+
+            // التمرير إلى نموذج التارجت
+            $('html, body').animate({
+                scrollTop: $("#club_id").offset().top - 100
+            }, 500);
+        });
+    });
+</script>
+{% endblock %}

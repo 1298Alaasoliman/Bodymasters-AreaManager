@@ -1,0 +1,224 @@
+/* تخصيص قائمة التاريخ المنسدلة */
+
+/* تنسيق Bootstrap Datepicker */
+.datepicker-dropdown {
+    width: 280px !important;
+    padding: 10px !important;
+    font-size: 14px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.datepicker table {
+    width: 100% !important;
+}
+
+.datepicker table tr td,
+.datepicker table tr th {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 8px !important;
+    font-size: 14px !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+}
+
+.datepicker table tr th.dow {
+    font-weight: bold !important;
+    background-color: #f0f0f0 !important;
+}
+
+.datepicker .datepicker-switch {
+    font-size: 16px !important;
+    font-weight: bold !important;
+    width: 100% !important;
+}
+
+.datepicker .prev,
+.datepicker .next {
+    font-size: 18px !important;
+    font-weight: bold !important;
+}
+
+.datepicker .day:hover,
+.datepicker .month:hover,
+.datepicker .year:hover {
+    background-color: rgba(255, 215, 0, 0.3) !important;
+}
+
+.datepicker .active {
+    background-color: #FFD700 !important;
+    color: #000000 !important;
+}
+
+/* تنسيق الإطار الخارجي للقائمة */
+::-webkit-calendar-picker {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* تنسيق رأس القائمة */
+::-webkit-calendar-picker-header {
+    background-color: #000000; /* أسود */
+    color: #FFD700; /* أصفر ذهبي */
+    padding: 10px;
+    border-radius: 0;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* تنسيق أزرار التنقل */
+::-webkit-calendar-picker-navigation {
+    background-color: transparent;
+    border-radius: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* تنسيق أيام الأسبوع */
+::-webkit-calendar-picker-weekday {
+    color: white;
+    font-weight: normal;
+    padding: 8px;
+    text-align: center;
+    background-color: #808080; /* رصاصي */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* تنسيق الأيام */
+::-webkit-calendar-picker-day {
+    border-radius: 0;
+    padding: 8px;
+    transition: background-color 0.2s;
+    text-align: center;
+    color: #333;
+    border: 1px solid #f0f0f0;
+}
+
+/* تنسيق اليوم الحالي */
+::-webkit-calendar-picker-day-today {
+    background-color: #f0f0f0;
+    color: #808080; /* رصاصي */
+    font-weight: bold;
+}
+
+/* تنسيق اليوم المحدد */
+::-webkit-calendar-picker-day-selected {
+    background-color: #FFD700; /* أصفر ذهبي */
+    color: #000000; /* أسود */
+    font-weight: bold;
+}
+
+/* تنسيق تأثير التحويم على الأيام */
+::-webkit-calendar-picker-day:hover {
+    background-color: rgba(255, 215, 0, 0.3); /* أصفر ذهبي شفاف */
+    cursor: pointer;
+}
+
+/* تنسيق أيام الشهر السابق واللاحق */
+::-webkit-calendar-picker-day-other-month {
+    color: #aaa;
+}
+
+/* تنسيق أزرار التنقل بين الشهور */
+::-webkit-calendar-picker-navigation-arrow {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* تنسيق أزرار التنقل عند التحويم */
+::-webkit-calendar-picker-navigation-arrow:hover {
+    color: #ffcccc;
+    cursor: pointer;
+}
+
+/* تنسيق عرض الوقت والتاريخ أسفل القائمة */
+::-webkit-calendar-picker-footer {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+}
+
+/* إضافة عرض الوقت والتاريخ أسفل القائمة */
+::-webkit-calendar-picker::after {
+    content: attr(data-time) "\A" attr(data-date);
+    display: block;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    white-space: pre;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* تنسيق إضافي لإخفاء التلميحات في حقول التاريخ */
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    visibility: hidden;
+    color: transparent;
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+    color: transparent;
+    /* إزالة display: none للسماح بإظهار الفواصل */
+    visibility: hidden;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+    color: transparent;
+}
+
+/* إظهار القيم فقط عند اختيار تاريخ */
+input[type="date"].has-value::-webkit-datetime-edit-fields-wrapper {
+    visibility: visible;
+}
+
+input[type="date"].has-value::-webkit-datetime-edit-month-field,
+input[type="date"].has-value::-webkit-datetime-edit-day-field,
+input[type="date"].has-value::-webkit-datetime-edit-year-field {
+    color: #8B0000;
+    font-weight: 500;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    unicode-bidi: plaintext;
+}
+
+/* إظهار الفواصل بين اليوم والشهر والسنة */
+input[type="date"].has-value::-webkit-datetime-edit-text {
+    color: #8B0000;
+    display: inline;
+    visibility: visible;
+    font-weight: 500;
+}
+
+/* تنسيق حقل التاريخ عند التركيز */
+input[type="date"].date-focused {
+    border-color: #8B0000;
+    box-shadow: 0 0 0 0.25rem rgba(139, 0, 0, 0.25);
+}
+
+/* تنسيق إضافي لإخفاء التلميحات في فايرفوكس */
+input[type="date"] {
+    color: transparent;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    unicode-bidi: plaintext;
+    text-align: center;
+}
+
+input[type="date"].has-value {
+    color: #8B0000;
+    text-align: center;
+}

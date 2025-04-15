@@ -1,0 +1,761 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<!-- إضافة مكتبة Flatpickr لاختيار التاريخ -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/light.css">
+<style>
+    /* تنسيق حقول التاريخ */
+    .custom-datepicker {
+        text-align: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        direction: ltr !important;
+        unicode-bidi: isolate !important;
+        background-color: white;
+        color: #333;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        width: 100% !important;
+        min-width: 250px !important;
+    }
+
+    /* زيادة عرض عمود حقول التاريخ */
+    .date-field-column {
+        min-width: 220px !important;
+        width: auto !important;
+        flex: 0 0 300px !important;
+    }
+
+    /* تغيير لون الحدود عند التركيز */
+    .custom-datepicker:focus {
+        border-color:rgb(26, 35, 209);
+        box-shadow: 0 0 0 0.2rem rgba(18, 15, 200, 0.25);
+        outline: none;
+    }
+
+    /* تنسيق مكتبة Flatpickr */
+    .flatpickr-calendar {
+        background-color: white !important;
+        color: #333 !important;
+        border: 1px solidrgb(145, 175, 205) !important;
+        border-radius: 4px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .flatpickr-day {
+        color: #333 !important;
+        border-radius: 5px !important;
+    }
+
+    .flatpickr-day.selected {
+        background-color:rgb(80, 122, 236) !important;
+        border-color:rgb(80, 122, 236) !important;
+        color: white !important;
+    }
+
+    .flatpickr-day:hover {
+        background-color: #f8f9fa !important;
+    }
+
+    .flatpickr-day.today {
+        border-color:rgb(80, 122, 236) !important;
+    }
+
+    .flatpickr-months .flatpickr-month {
+        background-color: #f8f9fa !important;
+        color: #333 !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background-color: #f8f9fa !important;
+        color: #333 !important;
+    }
+
+    .flatpickr-weekday {
+        color:rgb(80, 122, 236) !important;
+        font-weight: bold !important;
+    }
+
+    .flatpickr-prev-month, .flatpickr-next-month {
+        color: #333 !important;
+        fill: #333 !important;
+    }
+
+    .flatpickr-time {
+        background-color: #f8f9fa !important;
+    }
+
+    .numInputWrapper input {
+        color: #333 !important;
+    }
+
+    .flatpickr-calendar.arrowTop:before,
+    .flatpickr-calendar.arrowTop:after {
+        border-bottom-color: white !important;
+    }
+
+    /* إضافة أيقونة التقويم */
+    .date-input-container {
+        position: relative;
+    }
+
+    .date-input-container:after {
+        content: '\f073';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color:rgb(80, 122, 236);
+        pointer-events: none;
+    }
+
+    /* إخفاء أيقونة التقويم الافتراضية */
+    ::-webkit-calendar-picker-indicator {
+        display: none !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* إخفاء أيقونة التقويم الإضافية من Flatpickr */
+    .flatpickr-calendar .flatpickr-months .flatpickr-prev-month.flatpickr-prev-month,
+    .flatpickr-calendar .flatpickr-months .flatpickr-next-month.flatpickr-next-month {
+        position: absolute;
+    }
+
+    /* إزالة الأيقونة المكررة من حقول التاريخ */
+    .flatpickr-input[readonly] {
+        background-color: white !important;
+        background-image: none !important;
+    }
+
+    /* إزالة الأيقونة المكررة من حقول التاريخ */
+    .flatpickr-calendar:after {
+        display: none !important;
+    }
+
+    /* إزالة الأيقونة المكررة من حقول التاريخ */
+    .flatpickr-input.form-control {
+        background-image: none !important;
+    }
+
+    /* إزالة الأيقونة المكررة من حقول التاريخ */
+    input.flatpickr-input {
+        background-image: none !important;
+    }
+
+    ::-webkit-calendar-picker-indicator:hover {
+        background-color: #e9ecef;
+    }
+
+    /* تنسيق حقول التاريخ غير الصالحة */
+    .custom-datepicker.is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-plus-circle me-2"></i>إنشاء عطل جديد</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('issues.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة الأعطال
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-header bg-primary text-white rounded-top">
+                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>بيانات العطل</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('issues.create') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.club_id.label(class="form-label") }}
+                                {{ form.club_id(class="form-select", onchange="loadFacilities(this.value)") }}
+                                {% if form.club_id.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.club_id.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.facility_id.label(class="form-label") }}
+                                {{ form.facility_id(class="form-select") }}
+                                {% if form.facility_id.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.facility_id.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.request_number.label(class="form-label") }}
+                                {{ form.request_number(class="form-control text-center", style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: ltr !important; unicode-bidi: isolate !important;") }}
+                                {% if form.request_number.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.request_number.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 date-field-column">
+                            <div class="form-group">
+                                {{ form.request_date.label(class="form-label") }}
+                                <div class="date-input-container">
+                                    {{ form.request_date(class="form-control custom-datepicker", type="text", dir="ltr", lang="en-US", autocomplete="off", placeholder="") }}
+                                </div>
+                                {% if form.request_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.request_date.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 date-field-column">
+                            <div class="form-group">
+                                {{ form.due_date.label(class="form-label") }}
+                                <div class="date-input-container">
+                                    {{ form.due_date(class="form-control custom-datepicker", type="text", dir="ltr", lang="en-US", autocomplete="off", placeholder="") }}
+                                </div>
+                                {% if form.due_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.due_date.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form.status.label(class="form-label") }}
+                                {{ form.status(class="form-select") }}
+                                {% if form.status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.status.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form.notes.label(class="form-label") }}
+                                {{ form.notes(class="form-control", rows=4) }}
+                                {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.notes.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" id="saveButton" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- إضافة مكتبة Flatpickr لاختيار التاريخ -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // التأكد من أن حقل رقم الطلب يعرض الأرقام باللغة الإنجليزية
+        const requestNumberField = document.getElementById('request_number');
+        if (requestNumberField) {
+            // تعيين اللغة والاتجاه
+            requestNumberField.setAttribute('dir', 'ltr');
+            requestNumberField.setAttribute('lang', 'en-US');
+            requestNumberField.setAttribute('inputmode', 'numeric');
+            requestNumberField.setAttribute('pattern', '[0-9]*');
+
+            // منع إدخال الأرقام العربية
+            requestNumberField.addEventListener('input', function(e) {
+                // تحويل الأرقام العربية إلى إنجليزية
+                const arabicToEnglish = {
+                    '\u0660': '0', '\u0661': '1', '\u0662': '2', '\u0663': '3', '\u0664': '4',
+                    '\u0665': '5', '\u0666': '6', '\u0667': '7', '\u0668': '8', '\u0669': '9'
+                };
+
+                let value = this.value;
+                for (const [ar, en] of Object.entries(arabicToEnglish)) {
+                    value = value.replace(new RegExp(ar, 'g'), en);
+                }
+
+                // إذا تم تغيير القيمة، قم بتحديثها
+                if (value !== this.value) {
+                    this.value = value;
+                }
+            });
+        }
+        // تهيئة حقول التاريخ باستخدام مكتبة Flatpickr
+        // تعيين اللغة الإنجليزية للتاريخ
+        document.documentElement.lang = 'en-US';
+
+        // تهيئة مكتبة Flatpickr لحقول التاريخ
+        const datePickerOptions = {
+            dateFormat: "d/m/Y",
+            locale: "en",
+            disableMobile: true,
+            allowInput: true,
+            monthSelectorType: "dropdown",
+            position: "auto",
+            static: true,
+            showMonths: 1,
+            time_24hr: true,
+            weekNumbers: false,
+            wrap: false,
+            prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>',
+            nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
+            onChange: function(selectedDates, dateStr, instance) {
+                // تغيير لون الخلفية عند اختيار تاريخ
+                if (selectedDates.length > 0) {
+                    instance.input.classList.add('has-value');
+                } else {
+                    instance.input.classList.remove('has-value');
+                }
+            },
+            // إزالة الأيقونة المكررة
+            altInput: false,
+            altFormat: "d/m/Y",
+            // إزالة الأيقونة المكررة
+            clickOpens: true,
+            appendTo: document.body,
+            // إزالة الأيقونة المكررة
+            showMonths: 1,
+            static: true,
+            // إزالة الأيقونة المكررة
+            onReady: function(dateObj, dateStr, instance) {
+                // إزالة الأيقونة المكررة
+                if (instance.input.nextSibling && instance.input.nextSibling.classList && instance.input.nextSibling.classList.contains('flatpickr-mobile')) {
+                    instance.input.nextSibling.remove();
+                }
+            }
+        };
+
+        // تهيئة حقول التاريخ
+        flatpickr("#request_date", datePickerOptions);
+        flatpickr("#due_date", datePickerOptions);
+
+        // إزالة الأيقونات المكررة بعد تهيئة حقول التاريخ
+        setTimeout(function() {
+            // إزالة الأيقونات المكررة
+            document.querySelectorAll('.flatpickr-input').forEach(function(input) {
+                // إزالة الأيقونة المكررة
+                input.style.backgroundImage = 'none';
+
+                // إزالة العناصر المكررة
+                if (input.nextSibling && input.nextSibling.classList && input.nextSibling.classList.contains('flatpickr-mobile')) {
+                    input.nextSibling.remove();
+                }
+            });
+        }, 100);
+
+        document.querySelectorAll('.custom-datepicker').forEach(function(input) {
+            // تعيين الخصائص
+            input.setAttribute('dir', 'ltr');
+            input.setAttribute('lang', 'en-US');
+            input.setAttribute('autocomplete', 'off');
+            input.setAttribute('inputmode', 'numeric'); // لضمان استخدام لوحة مفاتيح رقمية إنجليزية
+
+            // إزالة النص الافتراضي للتاريخ
+            if (input.value) {
+                // إذا كان هناك قيمة محددة بالفعل، احتفظ بها
+                // إضافة فئة لإظهار القيمة
+                input.classList.add('has-value');
+            } else {
+                // إذا لم تكن هناك قيمة، اجعل الحقل فارغًا
+                input.value = '';
+            }
+
+            // إضافة مستمع للتركيز
+            input.addEventListener('focus', function() {
+                this.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+                // إزالة النص التوضيحي عند التركيز
+                if (this.defaultValue === this.value) {
+                    this.value = '';
+                }
+
+                // إضافة فئة للتركيز
+                this.classList.add('date-focused');
+
+                // تحديث عرض الوقت والتاريخ في القائمة
+                updateDateTimeDisplay(this);
+            });
+
+            // إضافة مستمع لفقدان التركيز
+            input.addEventListener('blur', function() {
+                // إزالة فئة التركيز
+                this.classList.remove('date-focused');
+
+                // إضافة فئة للقيمة إذا كان هناك قيمة
+                if (this.value) {
+                    this.classList.add('has-value');
+                } else {
+                    this.classList.remove('has-value');
+                }
+            });
+
+            // إضافة مستمع للتغيير
+            input.addEventListener('change', function() {
+                this.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+
+                // إضافة فئة للقيمة إذا كان هناك قيمة
+                if (this.value) {
+                    this.classList.add('has-value');
+
+                    // تنسيق التاريخ لإظهار الفواصل
+                    formatDateWithSeparators(this);
+                } else {
+                    this.classList.remove('has-value');
+                }
+
+                // تحديث عرض الوقت والتاريخ في القائمة
+                updateDateTimeDisplay(this);
+            });
+
+            // إضافة مستمع للنقر
+            input.addEventListener('click', function() {
+                // إزالة النص التوضيحي عند النقر
+                if (this.defaultValue === this.value) {
+                    this.value = '';
+                }
+
+                // تحديث عرض الوقت والتاريخ في القائمة
+                updateDateTimeDisplay(this);
+            });
+        });
+
+        // دالة لتحديث عرض الوقت والتاريخ في القائمة
+        function updateDateTimeDisplay(input) {
+            // تعيين اللغة الإنجليزية لقائمة التاريخ
+            try {
+                // محاولة تعيين اللغة الإنجليزية لقائمة التاريخ
+                input.setAttribute('lang', 'en-US');
+
+                // تعيين اللغة الإنجليزية لقائمة التاريخ
+                const dateElements = document.querySelectorAll('::-webkit-datetime-edit, ::-webkit-datetime-edit-fields-wrapper, ::-webkit-datetime-edit-text, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-year-field');
+                dateElements.forEach(function(element) {
+                    element.style.direction = 'ltr';
+                    element.style.unicodeBidi = 'isolate';
+                });
+            } catch (e) {
+                console.error('Error updating date display:', e);
+            }
+
+            // الحصول على الوقت الحالي
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const timeString = `${hours}:${minutes}:${seconds}`;
+
+            // الحصول على التاريخ المحدد
+            let dateString = '';
+            if (input.value) {
+                const selectedDate = new Date(input.value);
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                dateString = `${days[selectedDate.getDay()]}, ${months[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`;
+            } else {
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                dateString = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+            }
+
+            // تعيين البيانات للقائمة
+            const picker = input.closest('.form-group').querySelector('::-webkit-calendar-picker');
+            if (picker) {
+                picker.setAttribute('data-time', timeString);
+                picker.setAttribute('data-date', dateString);
+            }
+        }
+
+        // إضافة مستمع للنموذج لمنع الإرسال المزدوج والتحقق من صحة التواريخ
+        const form = document.querySelector('form');
+        let isSubmitting = false;
+
+        // إضافة مستمع للنقر على زر الحفظ
+        const saveButton = document.getElementById('saveButton');
+        if (saveButton) {
+            saveButton.addEventListener('click', function(e) {
+                // منع النقر المزدوج
+                if (isSubmitting) {
+                    return false;
+                }
+
+                // التحقق من صحة حقول التاريخ
+                const dateInputs = document.querySelectorAll('.custom-datepicker');
+                let isValid = true;
+
+                dateInputs.forEach(function(input) {
+                    // التحقق من وجود قيمة للتاريخ
+                    if (!input.value && input.required) {
+                        isValid = false;
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                });
+
+                // التحقق من صحة حقل المرفق
+                const facilitySelect = document.getElementById('facility_id');
+                if (facilitySelect) {
+                    // إذا كان المستخدم لم يختر مرفقًا، قم بتعيين قيمة فارغة
+                    if (facilitySelect.value === '' || facilitySelect.value === '0') {
+                        facilitySelect.value = '';
+                    }
+                }
+
+                // منع الإرسال إذا كانت التواريخ غير صالحة
+                if (!isValid) {
+                    return false;
+                }
+
+                // تعطيل الزر وإظهار رسالة التحميل
+                isSubmitting = true;
+                saveButton.disabled = true;
+                saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الحفظ...';
+
+                // السماح بإرسال النموذج
+                setTimeout(function() {
+                    form.submit();
+                }, 100);
+            });
+        }
+
+        // إضافة مستمع للنموذج للتحقق من صحة البيانات قبل الإرسال
+        form.addEventListener('submit', function(event) {
+            // التحقق من صحة حقول التاريخ
+            const dateInputs = document.querySelectorAll('.custom-datepicker');
+            let isValid = true;
+
+            dateInputs.forEach(function(input) {
+                // التحقق من وجود قيمة للتاريخ
+                if (!input.value && input.required) {
+                    isValid = false;
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+
+            // التحقق من صحة حقل المرفق
+            const facilitySelect = document.getElementById('facility_id');
+            if (facilitySelect) {
+                // إذا كان المستخدم لم يختر مرفقًا، قم بتعيين قيمة فارغة
+                if (facilitySelect.value === '' || facilitySelect.value === '0') {
+                    facilitySelect.value = '';
+                }
+            }
+
+            // منع الإرسال إذا كانت التواريخ غير صالحة
+            if (!isValid) {
+                event.preventDefault();
+                isSubmitting = false;
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = 'حفظ';
+                }
+                return false;
+            }
+        });
+
+        // دالة لتنسيق التاريخ لإظهار الفواصل وتحويل الأرقام العربية إلى إنجليزية
+        function formatDateWithSeparators(input) {
+            if (input.value) {
+                // التأكد من أن الفواصل مرئية
+                try {
+                    // محاولة تعيين اللغة الإنجليزية لقائمة التاريخ
+                    input.setAttribute('lang', 'en-US');
+
+                    // تعيين اللغة الإنجليزية لقائمة التاريخ
+                    const dateWrapper = input.closest('.form-group').querySelector('input[type="date"]');
+                    if (dateWrapper) {
+                        dateWrapper.setAttribute('lang', 'en-US');
+                    }
+
+                    // تعيين اللغة الإنجليزية لقائمة التاريخ
+                    const dateElements = input.querySelectorAll('::-webkit-datetime-edit, ::-webkit-datetime-edit-fields-wrapper, ::-webkit-datetime-edit-text, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-year-field');
+                    dateElements.forEach(function(element) {
+                        element.style.direction = 'ltr';
+                        element.style.unicodeBidi = 'isolate';
+                    });
+                } catch (e) {
+                    console.error('Error formatting date:', e);
+                }
+
+                // التأكد من أن الفواصل مرئية
+                const dateWrapper = input.closest('.form-group').querySelector('::-webkit-datetime-edit-fields-wrapper');
+                const separators = input.closest('.form-group').querySelectorAll('::-webkit-datetime-edit-text');
+                const dayField = input.closest('.form-group').querySelector('::-webkit-datetime-edit-day-field');
+                const monthField = input.closest('.form-group').querySelector('::-webkit-datetime-edit-month-field');
+                const yearField = input.closest('.form-group').querySelector('::-webkit-datetime-edit-year-field');
+
+                if (dateWrapper && separators.length > 0) {
+                    // إظهار الفواصل
+                    separators.forEach(function(separator) {
+                        separator.style.visibility = 'visible';
+                        separator.style.display = 'inline';
+                        separator.style.color = '#8B0000';
+                    });
+
+                    // التأكد من أن الأرقام باللغة الإنجليزية
+                    if (dayField) dayField.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+                    if (monthField) monthField.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+                    if (yearField) yearField.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+                }
+            }
+        }
+
+        // تحديث عرض الوقت والتاريخ في القائمة عند تحميل الصفحة
+        document.querySelectorAll('.custom-datepicker').forEach(function(input) {
+            // تعيين اللغة الإنجليزية لقائمة التاريخ
+            input.setAttribute('lang', 'en-US');
+
+            // تعيين اللغة الإنجليزية لقائمة التاريخ
+            try {
+                // محاولة تعيين اللغة الإنجليزية لقائمة التاريخ
+                input.setAttribute('data-date-locale', 'en-US');
+                input.setAttribute('data-date-format', 'MM/DD/YYYY');
+            } catch (e) {
+                console.error('Error setting date locale:', e);
+            }
+
+            // تحديث عرض الوقت والتاريخ في القائمة
+            setTimeout(function() {
+                updateDateTimeDisplay(input);
+
+                // تنسيق التاريخ إذا كان هناك قيمة
+                if (input.value) {
+                    input.classList.add('has-value');
+                    formatDateWithSeparators(input);
+                }
+            }, 500);
+        });
+
+        // تحميل المرافق للنادي المحدد عند تحميل الصفحة
+        const clubId = document.getElementById('club_id').value;
+        if (clubId) {
+            loadFacilities(clubId);
+        }
+
+        // إضافة مساعدة لتنسيق التاريخ
+        document.querySelectorAll('.custom-datepicker').forEach(function(input) {
+            // إضافة مستمع لتغيير التاريخ
+            input.addEventListener('change', function(e) {
+                // إزالة فئة غير صالح عند تغيير التاريخ
+                if (input.value) {
+                    input.classList.remove('is-invalid');
+                }
+            });
+        });
+    });
+
+    // دالة لتحميل المرافق المتاحة للنادي المحدد
+    function loadFacilities(clubId) {
+        if (!clubId) {
+            // إذا لم يتم تحديد نادي
+            const facilitySelect = document.getElementById('facility_id');
+            facilitySelect.innerHTML = '<option value="">اختر النادي أولاً</option>';
+            return;
+        }
+
+        console.log(`جاري تحميل المرافق للنادي ${clubId}...`);
+
+        // إظهار رسالة تحميل
+        const facilitySelect = document.getElementById('facility_id');
+        facilitySelect.innerHTML = '<option value="">جاري تحميل المرافق...</option>';
+        facilitySelect.disabled = true;
+
+        fetch(`/issues/get_facilities/${clubId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`خطأ في الاستجابة: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('تم استلام البيانات:', data);
+
+                // إعادة تعبئة قائمة المرافق
+                facilitySelect.innerHTML = '<option value="">اختر المرفق...</option>';
+                facilitySelect.disabled = false;
+
+                if (data.facilities && data.facilities.length > 0) {
+                    data.facilities.forEach(facility => {
+                        const option = document.createElement('option');
+                        option.value = facility.id;
+                        // عرض نوع المرفق فقط بدلاً من الاسم الكامل
+                        let facilityName = facility.name;
+                        if (facility.name.includes(' - ')) {
+                            facilityName = facility.name.split(' - ')[0];
+                        }
+                        option.textContent = facilityName;
+                        facilitySelect.appendChild(option);
+                    });
+                    console.log(`تم تحميل ${data.facilities.length} مرفق`);
+                } else {
+                    console.log('لم يتم العثور على مرافق لهذا النادي');
+                    facilitySelect.innerHTML = '<option value="">لا توجد مرافق لهذا النادي</option>';
+                }
+            })
+            .catch(error => {
+                console.error('خطأ في تحميل المرافق:', error);
+                facilitySelect.innerHTML = '<option value="">حدث خطأ في تحميل المرافق</option>';
+                facilitySelect.disabled = false;
+            });
+    }
+</script>
+{% endblock %}

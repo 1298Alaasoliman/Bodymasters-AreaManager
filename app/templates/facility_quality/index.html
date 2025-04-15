@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<!-- إضافة مكتبة Bootstrap Datepicker لاختيار التاريخ -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+<!-- إضافة مكتبة Select2 لتحسين قوائم الاختيار المتعددة -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- إضافة ملف CSS مخصص لقائمة التاريخ -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datepicker-custom.css') }}?v=2">
+<style>
+    .card-dashboard {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(112, 107, 107, 0.1);
+        transition: transform 0.3s;
+        margin-bottom: 20px;
+    }
+
+    .card-dashboard:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header-custom {
+        background-color: #e0e0e0; /* رمادي فاتح جداً */
+        color: black;
+        border-radius: 10px 10px 0 0 !important;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .quality-table {
+        width: 100%;
+        border-collapse: collapse;
+        direction: rtl;
+        font-family: 'Calibri', sans-serif;
+        font-size: 12px;
+    }
+
+    .quality-table th, .quality-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        font-family: 'Calibri', sans-serif;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .quality-table th {
+        background-color: #e0e0e0; /* رمادي فاتح جداً */
+        color: black;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .quality-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .quality-table tr:hover {
+        background-color: #ddd;
+    }
+
+    .quality-cell {
+        font-weight: bold;
+        font-family: 'Calibri', sans-serif;
+        font-size: 12px;
+    }
+
+    .quality-excellent {
+        background-color:rgb(191, 241, 204); /* خفيف جداً أخضر */
+        color: black;
+        font-size: 12px;
+    }
+
+    .quality-good {
+        background-color:rgb(247, 245, 143); /* خفيف جداً أصفر */
+        color: black;
+        font-size: 12px;
+    }
+
+    .quality-average {
+        background-color:rgb(244, 225, 174); /* خفيف جداً برتقالي */
+        color: black;
+        font-size: 12px;
+    }
+
+    .quality-poor {
+        background-color:rgb(243, 181, 181); /* خفيف جداً أحمر */
+        color: black;
+        font-size: 12px;
+    }
+
+    .quality-no-data {
+        background-color: #f0f0f0; /* رمادي فاتح جداً */
+        color: black;
+        font-style: italic;
+        font-size: 12px;
+    }
+
+    .quality-header {
+        background-color: #e8e8e8; /* رمادي فاتح جداً */
+        color: black;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .quality-average-row {
+        font-weight: bold;
+        background-color: #f5f5f5; /* رمادي فاتح جداً */
+        color: black;
+        font-size: 12px;
+    }
+
+    /* أنماط للطباعة */
+    @media print {
+        @page {
+            size: landscape;
+            margin: 5mm;
+            scale: 0.8; /* تصغير المحتوى ليظهر كاملاً */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body * {
+            visibility: hidden;
+        }
+
+        .print-content, .print-content * {
+            visibility: visible;
+        }
+
+        .print-content {
+            position: absolute;
+            left: 2;
+            top: 0;
+            width: 90% !important; /* تقليل العرض للتأكد من ظهور كل المحتوى */
+            height: auto;
+            overflow: visible;
+            transform: scale(0.9); /* تصغير المحتوى */
+            transform-origin: top center; /* نقطة بداية التصغير */
+            margin: 0 auto; /* توسيط المحتوى */
+        }
+
+        .print-content .card-body {
+            page-break-inside: avoid;
+            background: #000000;
+        }
+
+        .print-btn {
+            display: none !important;
+
+        }
+
+        /* إظهار معلومات النادي والتواريخ عند الطباعة */
+        .print-info {
+            display: block !important;
+            visibility: visible !important;
+            margin-bottom: 20px !important;
+            padding: 15px !important;
+            border: 1px solid #000 !important;
+            border-radius: 5px !important;
+            background-color:rgb(210, 217, 247) !important;
+            text-align: center !important;
+            direction: rtl !important;
+        }
+
+        .print-info h4 {
+            font-size: 20px !important;
+            font-weight: bold !important;
+            margin-bottom: 15px !important;
+            color: #000000 !important;
+        }
+
+        .print-info .d-flex {
+            display: flex !important;
+            justify-content: space-around !important;
+            flex-wrap: wrap !important;
+        }
+
+        .print-info .d-flex > div {
+            margin: 0 10px !important;
+            font-size: 16px !important;
+            color: #000 !important;
+        }
+
+        .print-info strong {
+            font-weight: bold !important;
+            margin-right: 5px !important;
+            color: #000 !important;
+        }
+
+        /* تنسيق التواريخ */
+        .print-date {
+            font-family: 'Calibri', sans-serif !important;
+            font-weight: bold !important;
+            direction: ltr !important;
+            display: inline-block !important;
+            color: #000 !important;
+        }
+
+        /* تنسيق اسم النادي */
+        .print-club-name {
+            font-weight: bold !important;
+            color: #000 !important;
+        }
+
+        .quality-table th, .quality-table td {
+            border: 1px solid #000 !important;
+            font-family: 'Calibri', sans-serif !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+        }
+
+        .quality-excellent {
+            background-color: #28a745 !important;
+            color: white !important;
+        }
+
+        .quality-good {
+            background-color: #ffc107 !important;
+            color: black !important;
+        }
+
+        .quality-average {
+            background-color:rgb(251, 128, 28) !important;
+            color: white !important;
+        }
+
+        .quality-poor {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+
+        .quality-no-data {
+            background-color: #6c757d !important;
+            color: white !important;
+            font-style: italic !important;
+        }
+
+        .quality-header {
+            background-color: #343a40 !important;
+            color: white !important;
+        }
+
+        .quality-average-row {
+            background-color: #6c757d !important;
+            color: white !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- قسم الفلاتر الثابت -->
+<div class="sticky-top" style="top: 10px; z-index: 1000;">
+    <div class="card filter-section" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px; padding: 0;">
+        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>تحليل جودة المرافق</h5>
+        </div>
+        <div class="card-body py-2">
+            <form method="get" action="{{ url_for('facility_quality.index') }}" id="filterForm">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center justify-content-between">
+                            {% if current_user.role == 'admin' %}
+                            <div style="width: 18%; margin-right: 10px;">
+                                <select class="form-select form-select-sm" id="user_id" name="user_id" style="height: 35px; font-size: 0.9rem;">
+                                    <option value="">-- جميع المستخدمين --</option>
+                                    {% for user in users %}
+                                    <option value="{{ user.id }}" {% if selected_user and selected_user.id == user.id %}selected{% endif %}>{{ user.email }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div style="width: 18%; margin-right: 10px;">
+                            {% else %}
+                            <div style="width: 23%; margin-right: 10px;">
+                            {% endif %}
+                                <select class="form-select form-select-sm" id="club_id" name="club_id" style="height: 35px; font-size: 0.9rem;">
+                                    <option value="">-- اختر النادي --</option>
+                                    {% for club in clubs %}
+                                    <option value="{{ club.id }}" {% if selected_club_id == club.id %}selected{% endif %}>{{ club.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% if current_user.role == 'admin' %}
+                            <div style="width: 18%;">
+                            {% else %}
+                            <div style="width: 23%;">
+                            {% endif %}
+                                <div class="date-input-container position-relative">
+                                    <input type="text" class="form-control form-control-sm text-center" id="start_date" name="start_date" value="{{ start_date }}" dir="ltr" lang="en-US" autocomplete="off" readonly style="height: 35px; font-size: 0.9rem; padding-right: 30px;" placeholder="من تاريخ">
+                                    <i class="fas fa-calendar-alt text-primary position-absolute" style="top: 10px; right: 10px;"></i>
+                                </div>
+                            </div>
+                            {% if current_user.role == 'admin' %}
+                            <div style="width: 18%;">
+                            {% else %}
+                            <div style="width: 23%;">
+                            {% endif %}
+                                <div class="date-input-container position-relative">
+                                    <input type="text" class="form-control form-control-sm text-center" id="end_date" name="end_date" value="{{ end_date }}" dir="ltr" lang="en-US" autocomplete="off" readonly style="height: 35px; font-size: 0.9rem; padding-right: 30px;" placeholder="إلى تاريخ">
+                                    <i class="fas fa-calendar-alt text-primary position-absolute" style="top: 10px; right: 10px;"></i>
+                                </div>
+                            </div>
+                            {% if current_user.role == 'admin' %}
+                            <div style="width: 18%;">
+                            {% else %}
+                            <div style="width: 23%;">
+                            {% endif %}
+                                <button type="submit" class="btn btn-sm btn-warning w-100" style="height: 35px;">
+                                    <i class="fas fa-filter me-1"></i> تصفية
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- مسافة لتجنب تداخل المحتوى مع البطاقة الثابتة -->
+<div style="height: 10px;"></div>
+
+<!-- بطاقة تحليل جودة المرافق -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-dashboard">
+            <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">تحليل جودة المرافق</h5>
+                <button type="button" class="btn btn-sm btn-outline-light print-btn" onclick="printQualityTable()">
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <!-- معلومات النادي والتواريخ للطباعة -->
+                <div class="print-info mb-3" style="display: none;">
+                    <h4 class="text-center mb-3">تقرير تحليل جودة المرافق</h4>
+                    <div class="d-flex justify-content-center">
+                        {% if selected_club_id %}
+                        <div class="mx-3">
+                            <strong>النادي:</strong>
+                            <span class="print-club-name">
+                                {% for club in clubs %}
+                                    {% if club.id == selected_club_id %}
+                                        {{ club.name }}
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                        {% elif selected_user %}
+                        <div class="mx-3">
+                            <strong>المستخدم:</strong>
+                            <span class="print-club-name">
+                                {{ selected_user.email }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        <div class="mx-3">
+                            <strong>من تاريخ:</strong> <span class="print-date">{{ start_date }}</span>
+                        </div>
+                        <div class="mx-3">
+                            <strong>إلى تاريخ:</strong> <span class="print-date">{{ end_date }}</span>
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="quality-table" id="qualityTable">
+                        <thead>
+                            <tr>
+                                <th class="quality-header" style="width: 160px; text-align: center;font-size: 0.95rem;" >النادي</th>
+                                {% for facility_type in facility_types %}
+                                <th style="color: black;background: font-size: 0.95rem;">{{ facility_type }}</th>
+                                {% endfor %}
+                                <th class="quality-header"style="color: black; ">المتوسط</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for club_id, club_data in quality_data.items() %}
+                            <tr>
+                                <td class="quality-header" style="color: rgb(0, 0, 0); text-align: right; font-size: 0.95rem;">{{ club_data.name }}</td>
+                                {% for facility_type in facility_types %}
+                                {% if club_data.facilities[facility_type]['average_quality'] == -1 %}
+                                <td class="quality-cell" style="background-color: #f0f0f0; color: #999;">
+                                    غير متوفر
+                                </td>
+                                {% else %}
+                                <td class="quality-cell {% if club_data.facilities[facility_type]['average_quality'] >= 90 %}quality-excellent{% elif club_data.facilities[facility_type]['average_quality'] >= 80 %}quality-good{% elif club_data.facilities[facility_type]['average_quality'] >= 70 %}quality-average{% else %}quality-poor{% endif %}">
+                                    {{ club_data.facilities[facility_type]['average_quality'] }}%
+                                    <br>
+                                    <small>({{ club_data.facilities[facility_type]['check_count'] }} تشيك)</small>
+                                </td>
+                                {% endif %}
+                                {% endfor %}
+                                <td class="quality-cell {% if club_data.average >= 90 %}quality-excellent{% elif club_data.average >= 80 %}quality-good{% elif club_data.average >= 70 %}quality-average{% else %}quality-poor{% endif %}"style="color: black;background: rgb(196, 197, 192);font-size: 0.95rem;">
+                                    {{ club_data.average }}%
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="quality-average-row">
+                                <td style="color: black;background: rgb(196, 197, 192);text-align: right;font-size: 0.95rem;">المتوسط</td>
+                                {% for facility_type in facility_types %}
+                                <td class="quality-cell {% if averages[facility_type] >= 90 %}quality-excellent{% elif averages[facility_type] >= 80 %}quality-good{% elif averages[facility_type] >= 70 %}quality-average{% else %}quality-poor{% endif %}"style="color: black;background: rgb(196, 197, 192);font-size: 0.95rem;">
+                                    {{ averages[facility_type] }}%
+                                </td>
+                                {% endfor %}
+                                <td class="quality-cell {% if total_average >= 90 %}quality-excellent{% elif total_average >= 80 %}quality-good{% elif total_average >= 70 %}quality-average{% else %}quality-poor{% endif %}"style="color: black;background: rgb(196, 197, 192);font-size: 0.95rem;">
+                                    {{ total_average }}%
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- إضافة مكتبة Bootstrap Datepicker لاختيار التاريخ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.ar.min.js"></script>
+<!-- إضافة مكتبة Select2 لتحسين قوائم الاختيار المتعددة -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // إضافة نمط CSS لقائمة النوادي
+        $('<style>\n' +
+            '.select2-dropdown-large { max-height: 500px; overflow-y: auto; }\n' +
+            '.select2-results__option { padding: 5px 10px; font-size: 11px; }\n' +
+            '.select2-results { max-height: 500px; }\n' +
+            '.select2-results__options { max-height: 500px !important; }\n' +
+        '</style>').appendTo('head');
+
+        // تهيئة حقول التاريخ
+        $('#start_date, #end_date').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            todayHighlight: true,
+            language: 'en',
+            rtl: false,
+            clearBtn: true,
+            todayBtn: "linked"
+        });
+
+        // دالة لإزالة أيقونات التقويم الزائدة
+        function removeExtraIcons() {
+            // الحصول على جميع أيقونات التقويم
+            const calendarIcons = document.querySelectorAll('.date-input-container .fa-calendar-alt');
+
+            // التأكد من وجود أيقونة واحدة فقط لكل حقل
+            const startDateContainer = document.querySelector('#start_date').closest('.date-input-container');
+            const endDateContainer = document.querySelector('#end_date').closest('.date-input-container');
+
+            if (startDateContainer) {
+                const startDateIcons = startDateContainer.querySelectorAll('.fa-calendar-alt');
+                for (let i = 1; i < startDateIcons.length; i++) {
+                    startDateIcons[i].remove();
+                }
+            }
+
+            if (endDateContainer) {
+                const endDateIcons = endDateContainer.querySelectorAll('.fa-calendar-alt');
+                for (let i = 1; i < endDateIcons.length; i++) {
+                    endDateIcons[i].remove();
+                }
+            }
+        }
+
+        // تنفيذ الدالة عند تحميل الصفحة
+        removeExtraIcons();
+
+        // تنفيذ الدالة بعد فترة قصيرة من تحميل الصفحة
+        $(document).ready(function() {
+            setTimeout(removeExtraIcons, 500);
+            setTimeout(removeExtraIcons, 1000);
+
+            // تنفيذ الدالة بشكل متكرر كل 500 مللي ثانية
+            setInterval(removeExtraIcons, 500);
+        });
+
+        // تنفيذ الدالة عند النقر على حقول التاريخ
+        $(document).on('click', '.datepicker, .date-input-container, .input-group-text', function() {
+            setTimeout(removeExtraIcons, 10);
+            setTimeout(removeExtraIcons, 100);
+            setTimeout(removeExtraIcons, 300);
+        });
+
+        // تنفيذ الدالة عند تغيير حجم النافذة
+        $(window).on('resize', function() {
+            removeExtraIcons();
+        });
+
+        // تنفيذ الدالة عند التمرير
+        $(window).on('scroll', function() {
+            removeExtraIcons();
+        });
+    });
+
+    // دالة لطباعة جدول تحليل جودة المرافق
+    function printQualityTable() {
+        // الحصول على البطاقة التي تحتوي على الجدول
+        var card = $('#qualityTable').closest('.card');
+
+        // إظهار معلومات النادي والتواريخ قبل الطباعة
+        $('.print-info').show();
+
+        // إضافة فئة للطباعة
+        card.addClass('print-content');
+
+        // إعطاء وقت للمتصفح لتحديث العرض
+        setTimeout(function() {
+            // طباعة الصفحة
+            window.print();
+
+            // إخفاء معلومات النادي والتواريخ بعد الطباعة
+            $('.print-info').hide();
+
+            // إزالة فئة الطباعة بعد الانتهاء
+            setTimeout(function() {
+                card.removeClass('print-content');
+            }, 500);
+        }, 500);
+    }
+</script>
+{% endblock %}

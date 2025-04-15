@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-file-import me-2"></i>استيراد الموظفين</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('employees.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة الموظفين
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>تحميل ملف Excel</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>تعليمات الاستيراد:</h5>
+                    <ol>
+                        <li>يجب أن يحتوي ملف Excel على الأعمدة التالية بالترتيب:
+                            <ul>
+                                <li><strong>الرقم الوظيفي</strong> - رقم الموظف</li>
+                                <li><strong>اسم الموظف</strong> - اسم الموظف الكامل</li>
+                                <li><strong>الوظيفة</strong> - مثل: مدرب، عامل، مدير، إلخ</li>
+                                <li><strong>الدور الوظيفي</strong> - يجب أن يكون أحد القيم التالية:
+                                    <ul>
+                                        <li>مدير نادي</li>
+                                        <li>نائب مدير نادي</li>
+                                        <li>خدمة عملاء</li>
+                                        <li>منسق عمليات</li>
+                                        <li>مدير لياقة</li>
+                                        <li>مدرب كمال أجسام</li>
+                                        <li>مدرب لياقة</li>
+                                        <li>مدرب سباحة</li>
+                                        <li>مشرف عمال</li>
+                                        <li>عامل نظافة</li>
+                                        <li>عامل مغسلة</li>
+                                    </ul>
+                                </li>
+                                <li><strong>النادي</strong> - اسم النادي الذي يعمل به الموظف (مثل: نادي شبرا، نادي الملز، إلخ)</li>
+                                <li><strong>الحالة</strong> - يجب أن تكون "يعمل" أو "مجاز"</li>
+                            </ul>
+                        </li>
+                        <li>يجب أن يكون الصف الأول هو صف العناوين بالضبط كما هو مذكور أعلاه.</li>
+                        <li>سيتم تجاهل الموظفين الذين لديهم نفس الرقم الوظيفي لموظف موجود بالفعل.</li>
+                        <li>سيتم التعرف على النادي تلقائيًا من اسم النادي المذكور في الملف.</li>
+                    </ol>
+                </div>
+
+                <form method="post" action="{{ url_for('employees.import_employees') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="club_id" class="form-label">اختر النادي الافتراضي (في حالة عدم وجود النادي في الملف):</label>
+                        <select class="form-select" id="club_id" name="club_id" required>
+                            <option value="" selected disabled>اختر النادي</option>
+                            {% for club in clubs %}
+                            <option value="{{ club.id }}">{{ club.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">سيتم استخدام هذا النادي فقط إذا لم يتم التعرف على النادي من الملف.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="file" class="form-label">اختر ملف Excel:</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx, .xls" required>
+                        <div class="form-text">يجب أن يكون الملف بتنسيق Excel (.xlsx أو .xls).</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i> استيراد
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

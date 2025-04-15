@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .days-checkboxes {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .days-checkboxes .form-check {
+        margin-right: 15px;
+    }
+
+    .employee-info {
+        font-size: 0.9rem;
+    }
+
+    .employee-info .mb-3 {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .employee-info label {
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+
+    .employee-info p {
+        margin-bottom: 0.5rem;
+    }
+
+    .shift-type-options {
+        margin-bottom: 15px;
+    }
+
+    .shift-times {
+        margin-bottom: 15px;
+    }
+
+    .shift-times .row {
+        margin-bottom: 10px;
+    }
+
+    .shift-times label {
+        font-weight: bold;
+    }
+
+    .specific-day {
+        margin-bottom: 15px;
+    }
+
+    .notes-section {
+        margin-bottom: 15px;
+    }
+
+    .card-header {
+        padding: 0.5rem 1rem;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+
+    .card {
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-calendar-alt me-2"></i>جدول سير العمل {{ employee.name }}</h4>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('schedules.club_schedules', club_id=employee.club_id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة
+        </a>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-edit me-2"></i>تعديل جدول الدوام</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('schedules.employee_schedule', employee_id=employee.id) }}">
+            {{ form.hidden_tag() }}
+
+            <!-- الصف الأول: معلومات الموظف وأيام الدوام -->
+            <div class="row mb-3">
+                <!-- معلومات الموظف -->
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">معلومات الموظف</h6>
+                        </div>
+                        <div class="card-body employee-info">
+                            <div class="mb-3">
+                                <label class="form-label">الاسم:</label>
+                                <p class="form-control-static">{{ employee.name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">الرقم الوظيفي:</label>
+                                <p class="form-control-static">{{ employee.employee_number }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">المسمى الوظيفي:</label>
+                                <p class="form-control-static">{{ employee.position }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">الدور الوظيفي:</label>
+                                <p class="form-control-static">{{ employee.role }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">النادي:</label>
+                                <p class="form-control-static">{{ employee.club.name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- أيام الدوام -->
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">أيام الدوام</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="days-checkboxes">
+                                <div class="form-check">
+                                    {{ form.saturday(class="form-check-input") }}
+                                    {{ form.saturday.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.sunday(class="form-check-input") }}
+                                    {{ form.sunday.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.monday(class="form-check-input") }}
+                                    {{ form.monday.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.tuesday(class="form-check-input") }}
+                                    {{ form.tuesday.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.wednesday(class="form-check-input") }}
+                                    {{ form.wednesday.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.thursday(class="form-check-input") }}
+                                    {{ form.thursday.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.friday(class="form-check-input") }}
+                                    {{ form.friday.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- نوع الدوام -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">نوع الدوام</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="shift-type-options">
+                                {{ form.shift_type(class="form-select") }}
+                                {% if form.shift_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.shift_type.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- أوقات الدوام -->
+                    <div class="card mt-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">أوقات الدوام</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="shift-times">
+                                <div class="row" id="shift1-times">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form.shift1_start.label(class="form-label") }}
+                                            {{ form.shift1_start(class="form-select", id="shift1_start") }}
+                                            {% if form.shift1_start.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.shift1_start.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form.shift1_end.label(class="form-label") }}
+                                            {{ form.shift1_end(class="form-select", id="shift1_end", readonly="readonly") }}
+                                            {% if form.shift1_end.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.shift1_end.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row" id="shift2-times">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form.shift2_start.label(class="form-label") }}
+                                            {{ form.shift2_start(class="form-select", id="shift2_start") }}
+                                            {% if form.shift2_start.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.shift2_start.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form.shift2_end.label(class="form-label") }}
+                                            {{ form.shift2_end(class="form-select", id="shift2_end", readonly="readonly") }}
+                                            {% if form.shift2_end.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.shift2_end.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الصف الثاني: يوم التخصيص والملاحظات -->
+            <div class="row mb-3">
+                <!-- يوم التخصيص -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">يوم التخصيص</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="specific-day">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            {{ form.specific_day.label(class="form-label") }}
+                                            {{ form.specific_day(class="form-select", id="specific_day") }}
+                                            {% if form.specific_day.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.specific_day.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            {{ form.specific_day_start.label(class="form-label") }}
+                                            {{ form.specific_day_start(class="form-select", id="specific_day_start") }}
+                                            {% if form.specific_day_start.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.specific_day_start.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            {{ form.specific_day_end.label(class="form-label") }}
+                                            {{ form.specific_day_end(class="form-select", id="specific_day_end", readonly="readonly") }}
+                                            {% if form.specific_day_end.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.specific_day_end.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ملاحظات -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">ملاحظات</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="notes-section">
+                                <div class="mb-3">
+                                    {{ form.notes(class="form-control", rows=5) }}
+                                    {% if form.notes.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.notes.errors %}
+                                        {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const shiftTypeSelect = document.getElementById('shift_type');
+        const shift1Times = document.getElementById('shift1-times');
+        const shift2Times = document.getElementById('shift2-times');
+        const shift1Start = document.getElementById('shift1_start');
+        const shift1End = document.getElementById('shift1_end');
+        const shift2Start = document.getElementById('shift2_start');
+        const shift2End = document.getElementById('shift2_end');
+        const specificDayStart = document.getElementById('specific_day_start');
+        const specificDayEnd = document.getElementById('specific_day_end');
+
+        // دالة لحساب نهاية الفترة بناءً على بداية الفترة ونوع الدوام
+        function calculateEndTime(startTime, shiftType) {
+            if (!startTime) return '';
+
+            // تحويل الوقت إلى ساعات
+            const [hours, minutes] = startTime.split(':').map(Number);
+            let endHours = hours;
+
+            // حساب نهاية الفترة بناءً على نوع الدوام
+            if (shiftType === '7hours') {
+                endHours = (hours + 7) % 24;
+            } else if (shiftType === '8hours') {
+                endHours = (hours + 8) % 24;
+            } else {
+                // فترة واحدة افتراضية (8 ساعات)
+                endHours = (hours + 8) % 24;
+            }
+
+            // تنسيق الوقت
+            return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        // تحديث عرض حقول الفترات بناءً على نوع الدوام المحدد
+        function updateShiftFields() {
+            const shiftType = shiftTypeSelect.value;
+
+            // إظهار/إخفاء حقول الفترة الثانية
+            if (shiftType === 'double') {
+                shift2Times.style.display = 'flex';
+            } else {
+                shift2Times.style.display = 'none';
+            }
+
+            // تحديث نهاية الفترة بناءً على بداية الفترة ونوع الدوام
+            if (shift1Start.value) {
+                shift1End.value = calculateEndTime(shift1Start.value, shiftType);
+            }
+
+            if (shift2Start.value) {
+                shift2End.value = calculateEndTime(shift2Start.value, shiftType);
+            }
+
+            if (specificDayStart.value) {
+                specificDayEnd.value = calculateEndTime(specificDayStart.value, shiftType);
+            }
+        }
+
+        // تحديث نهاية الفترة عند تغيير بداية الفترة
+        shift1Start.addEventListener('change', function() {
+            shift1End.value = calculateEndTime(shift1Start.value, shiftTypeSelect.value);
+        });
+
+        shift2Start.addEventListener('change', function() {
+            shift2End.value = calculateEndTime(shift2Start.value, shiftTypeSelect.value);
+        });
+
+        specificDayStart.addEventListener('change', function() {
+            specificDayEnd.value = calculateEndTime(specificDayStart.value, shiftTypeSelect.value);
+        });
+
+        // تنفيذ الدالة عند تحميل الصفحة
+        updateShiftFields();
+
+        // تنفيذ الدالة عند تغيير نوع الدوام
+        shiftTypeSelect.addEventListener('change', updateShiftFields);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block title %}أنواع المرافق{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+      
+    </div>
+    <div class="col-md-6 text-md-end">
+        {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('facility_types.import_excel') }}" class="btn btn-success me-2">
+            <i class="fas fa-file-excel me-1"></i> استيراد من الإكسيل
+        </a>
+        <a href="{{ url_for('facility_types.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> إضافة نوع مرفق جديد
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow mb-4" >
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between" style="background:rgb(209, 206, 206);">
+        <h5 class="m-0 font-weight-bold text-primary" style="color:rgb(1, 1, 1);">قائمة أنواع المرافق</h5>
+    </div>
+    <div class="card-body">
+
+
+        <div class="table-responsive">
+            <table class="table table-hover" id="facilityTypesTable">
+                <thead>
+                    <tr>
+                        <th cl style="color:rgb(1, 1, 1);background:rgb(209, 206, 206);text-align: center;font-size: 16px; ">#</th>
+                        <th class="filter-header" style="color:rgb(1, 1, 1);background:rgb(209, 206, 206);font-size: 14px;text-align: center;">
+                            <div >
+                                <span >اسم نوع المرفق</span>
+                                <i class="fas fa-filter ms-2 filter-icon" onclick="toggleFilter()"></i>
+                            </div>
+                            <div id="filter-dropdown" class="filter-dropdown" style="display: none;">
+                                <div class="filter-search">
+                                    <input type="text" class="form-control form-control-sm" placeholder="بحث..." id="filter-search-input" onkeyup="filterItems()">
+                                </div>
+                                <div class="filter-items" id="filter-items-container">
+                                    <!-- سيتم ملؤها بواسطة JavaScript -->
+                                </div>
+                                <div class="filter-actions">
+                                    <button class="btn btn-sm btn-secondary" onclick="clearFilter()">مسح</button>
+                                    <button class="btn btn-sm btn-primary" onclick="applyFilter()">تطبيق</button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="color:rgb(1, 1, 1);background:rgb(209, 206, 206); text-align: center; font-size: 14px;">الحالة</th>
+                        <th style="color:rgb(1, 1, 1);background:rgb(209, 206, 206);text-align: center;font-size: 14px;">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody style="color:rgb(1, 1, 1);background:rgb(209, 206, 206); text-align: center; font-size: 14px;">
+                    {% for facility_type in facility_types.items %}
+                    <tr>
+                        <td>{{ loop.index + (facility_types.page - 1) * facility_types.per_page }}</td>
+                        <td>{{ facility_type.name }}</td>
+                        <td style="text-align: center;">
+                            {% if facility_type.is_active %}
+                            <span class="badge bg-success" >نشط</span>
+                            {% else %}
+                            <span class="badge bg-secondary">غير نشط</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            <a href="{{ url_for('facility_types.view', id=facility_type.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if current_user.role == 'admin' %}
+                            <a href="{{ url_for('facility_types.edit', id=facility_type.id) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ url_for('facility_types.delete', id=facility_type.id) }}" method="post" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirmDelete(event, 'هل أنت متأكد من حذف هذا النوع؟')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">لا توجد أنواع مرافق.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- تم إلغاء التنقل بين الصفحات لعرض جميع المرافق في صفحة واحدة -->
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* تنسيق رؤوس الأعمدة مع الفلتر */
+    .filter-header {
+        position: relative;
+        cursor: default;
+        background-color: #f8f9fa;
+        padding: 8px;
+        vertical-align: middle;
+    }
+
+    .filter-icon {
+        cursor: pointer;
+        color: #6c757d;
+        transition: color 0.2s;
+        font-size: 0.85rem;
+    }
+
+    .filter-icon:hover {
+        color: #007bff;
+    }
+
+    /* تنسيق قائمة الفلتر المنسدلة */
+    .filter-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 300px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 10px;
+        margin-top: 5px;
+    }
+
+    .filter-search {
+        margin-bottom: 10px;
+    }
+
+    .filter-items {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        padding: 5px;
+    }
+
+    .filter-item {
+        padding: 5px;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .filter-item input[type="checkbox"] {
+        margin-left: 8px;
+    }
+
+    .filter-actions {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* تحسين مظهر الجدول */
+    #facilityTypesTable {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        border: 1px solid rgb(149, 152, 149);
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    #facilityTypesTable th {
+        font-weight: bold;
+        text-align: right;
+        border-bottom: 2px solid #e3e6f0;
+        padding: 12px 8px;
+    }
+
+    #facilityTypesTable td {
+        vertical-align: middle;
+        padding: 12px 8px;
+    }
+
+    #facilityTypesTable tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // القيم المحددة للفلتر
+    let selectedValues = [];
+    let allFacilityTypes = [];
+
+    // تهيئة الفلتر عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        // جمع جميع أسماء أنواع المرافق من الجدول
+        const table = document.getElementById('facilityTypesTable');
+        const rows = table.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const nameCell = row.cells[1];
+            if (nameCell) {
+                const facilityTypeName = nameCell.textContent.trim();
+                if (facilityTypeName && !allFacilityTypes.includes(facilityTypeName)) {
+                    allFacilityTypes.push(facilityTypeName);
+                }
+            }
+        });
+
+        // إضافة مستمع لإغلاق الفلتر عند النقر خارجه
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('filter-dropdown');
+            const filterIcon = document.querySelector('.filter-icon');
+
+            if (dropdown.style.display !== 'none' &&
+                !dropdown.contains(event.target) &&
+                event.target !== filterIcon) {
+                dropdown.style.display = 'none';
+            }
+        });
+    });
+
+    // دالة لإظهار وإخفاء قائمة الفلتر
+    function toggleFilter() {
+        const dropdown = document.getElementById('filter-dropdown');
+
+        if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+            dropdown.style.display = 'block';
+            populateFilterItems();
+            document.getElementById('filter-search-input').focus();
+        } else {
+            dropdown.style.display = 'none';
+        }
+    }
+
+    // دالة لملء قائمة الفلتر بالعناصر
+    function populateFilterItems() {
+        const container = document.getElementById('filter-items-container');
+        container.innerHTML = '';
+
+        // فرز القائمة أبجدياً
+        allFacilityTypes.sort((a, b) => a.localeCompare(b, 'ar'));
+
+        allFacilityTypes.forEach(name => {
+            const item = document.createElement('div');
+            item.className = 'filter-item';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = name;
+            checkbox.checked = selectedValues.includes(name);
+
+            const label = document.createElement('label');
+            label.textContent = name;
+
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            container.appendChild(item);
+        });
+    }
+
+    // دالة لتصفية العناصر في قائمة الفلتر
+    function filterItems() {
+        const searchText = document.getElementById('filter-search-input').value.toLowerCase();
+        const items = document.querySelectorAll('.filter-item');
+
+        items.forEach(item => {
+            const label = item.querySelector('label');
+            const text = label.textContent.toLowerCase();
+
+            if (text.includes(searchText)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // دالة لتطبيق الفلتر
+    function applyFilter() {
+        selectedValues = [];
+        const checkboxes = document.querySelectorAll('.filter-item input[type="checkbox"]:checked');
+
+        checkboxes.forEach(checkbox => {
+            selectedValues.push(checkbox.value);
+        });
+
+        filterTable();
+        document.getElementById('filter-dropdown').style.display = 'none';
+    }
+
+    // دالة لمسح الفلتر
+    function clearFilter() {
+        const checkboxes = document.querySelectorAll('.filter-item input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        selectedValues = [];
+        filterTable();
+        document.getElementById('filter-dropdown').style.display = 'none';
+    }
+
+    // دالة لتطبيق الفلتر على الجدول
+    function filterTable() {
+        const table = document.getElementById('facilityTypesTable');
+        const rows = table.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const nameCell = row.cells[1];
+            if (!nameCell) return;
+
+            const facilityTypeName = nameCell.textContent.trim();
+
+            if (selectedValues.length === 0 || selectedValues.includes(facilityTypeName)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

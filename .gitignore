@@ -1,0 +1,70 @@
+# ملفات بايثون
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# البيئة الافتراضية
+venv/
+ENV/
+.env
+
+# قاعدة البيانات
+*.db
+*.sqlite
+*.sqlite3
+
+# ملفات النظام
+.DS_Store
+Thumbs.db
+
+# ملفات المحرر
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ملفات السجل
+*.log
+
+# ملفات مؤقتة
+tmp/
+temp/
+
+# ملفات التكوين المحلية
+instance/
+
+# ملفات التحميل
+uploads/
+
+# ملفات الترجمة المجمعة
+*.mo
+*.pot
+
+# ملفات الإحصاءات
+coverage/
+.coverage
+htmlcov/
+
+# ملفات الاختبار
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover

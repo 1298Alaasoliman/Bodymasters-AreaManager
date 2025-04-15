@@ -1,0 +1,361 @@
+/* ملف CSS مخصص لألوان شركة BodyMasters */
+
+/* تعريف الألوان الرئيسية */
+:root {
+    --primary-color: #808080; /* رصاصي */
+    --secondary-color: #FFD700; /* أصفر ذهبي */
+    --dark-color: #000000; /* أسود */
+    --light-color: #FFFFFF; /* أبيض */
+    --gray-light: #f0f0f0; /* رصاصي فاتح */
+    --gray-dark: #505050; /* رصاصي داكن */
+    --yellow-light: #FFF0A0; /* أصفر فاتح */
+    --yellow-dark: #D4AF37; /* أصفر داكن */
+
+    /* ألوان الحالات */
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+}
+
+/* تخصيص الهيدر */
+.navbar-dark {
+    background-color: var(--primary-color) !important; /* رصاصي */
+    border-bottom: 3px solid var(--secondary-color);
+}
+
+.navbar-dark .navbar-brand {
+    color: var(--secondary-color) !important;
+    font-weight: bold;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: var(--dark-color) !important; /* أسود */
+    font-weight: 500;
+    font-size: 0.85rem; /* تصغير حجم الخط */
+    padding: 0.4rem 0.6rem; /* تقليل المسافة بين العناصر */
+}
+
+.navbar-dark .navbar-nav .nav-link.active {
+    background-color: var(--dark-color);
+    color: var(--light-color) !important; /* أبيض */
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.navbar-dark .navbar-nav .nav-item {
+    margin: 0 1px; /* تقليل المسافة بين العناصر */
+}
+
+/* تنسيق القوائم المنسدلة في شريط التنقل */
+.navbar-dark .navbar-nav .dropdown-menu {
+    min-width: 180px;
+    margin-top: 0;
+}
+
+.navbar-dark .navbar-nav .dropdown-item {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.navbar-dark .navbar-nav .dropdown-toggle::after {
+    vertical-align: middle;
+    margin-right: 0.2rem;
+}
+
+/* تنسيق الأيقونات في شريط التنقل */
+.navbar-dark .navbar-nav .nav-link i {
+    font-size: 0.9rem;
+    margin-left: 0.2rem;
+}
+
+/* تنسيق شريط التنقل على الأجهزة الصغيرة */
+@media (max-width: 992px) {
+    .navbar-dark .navbar-nav .nav-link {
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-dark .navbar-nav .nav-item:last-child .nav-link {
+        border-bottom: none;
+    }
+
+    .navbar-dark .navbar-nav .dropdown-menu {
+        border: none;
+        box-shadow: none;
+        padding-left: 1rem;
+    }
+
+    .navbar-dark .navbar-nav .dropdown-item {
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* تخصيص البطاقات */
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: var(--dark-color);
+    color: var(--secondary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    font-weight: bold;
+}
+
+.card-header.bg-primary {
+    background-color: var(--dark-color) !important;
+    color: var(--secondary-color);
+}
+
+.card-header.bg-secondary {
+    background-color: var(--primary-color) !important;
+    color: var(--light-color);
+}
+
+.card-header.bg-success {
+    background-color: var(--success-color) !important;
+    color: var(--light-color);
+}
+
+.card-header.bg-danger {
+    background-color: var(--danger-color) !important;
+    color: var(--light-color);
+}
+
+.card-header.bg-warning {
+    background-color: var(--warning-color) !important;
+    color: var(--dark-color);
+}
+
+.card-header.bg-info {
+    background-color: var(--info-color) !important;
+    color: var(--light-color);
+}
+
+/* تخصيص الأزرار */
+.btn-primary {
+    background-color: var(--dark-color);
+    border-color: var(--dark-color);
+    color: var(--secondary-color);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--gray-dark);
+    border-color: var(--gray-dark);
+    color: var(--secondary-color);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+    background-color: var(--yellow-dark);
+    border-color: var(--yellow-dark);
+    color: var(--dark-color);
+}
+
+.btn-info {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--light-color);
+}
+
+.btn-info:hover, .btn-info:focus {
+    background-color: var(--gray-dark);
+    border-color: var(--gray-dark);
+    color: var(--light-color);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+.btn-dark {
+    background-color: var(--dark-color);
+    border-color: var(--dark-color);
+    color: var(--light-color);
+}
+
+.btn-light {
+    background-color: var(--light-color);
+    border-color: var(--gray-light);
+    color: var(--dark-color);
+}
+
+/* تخصيص الجداول */
+.table thead th {
+    background-color: var(--dark-color);
+    color: var(--secondary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    font-weight: bold;
+    text-align: center;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* تنسيق الجدول المخصص */
+#clubsTable th, #employeesTable th, #violationsTable th {
+    color: var(--dark-color) !important;
+    font-weight: bold;
+    text-align: center;
+    background-color: var(--primary-color);
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+#clubsTable td, #employeesTable td, #violationsTable td {
+    vertical-align: middle;
+}
+
+/* تنسيق الصفوف المتناوبة */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(128, 128, 128, 0.05);
+}
+
+/* تخصيص القوائم المنسدلة */
+.dropdown-menu {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    margin-top: 8px;
+    min-width: 200px;
+    animation: fadeIn 0.2s ease-in-out;
+    border-top: 3px solid var(--secondary-color);
+}
+
+.dropdown-item:hover {
+    background-color: var(--gray-light);
+    color: var(--dark-color);
+    border-right: 3px solid var(--secondary-color);
+    padding-right: 20px;
+}
+
+.dropdown-item.active {
+    background-color: rgba(128, 128, 128, 0.1);
+    color: var(--dark-color);
+    border-right: 3px solid var(--secondary-color);
+}
+
+/* تخصيص النماذج */
+.form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+.form-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* تخصيص التنبيهات */
+.alert-primary {
+    background-color: var(--gray-light);
+    border-color: var(--primary-color);
+    color: var(--dark-color);
+}
+
+.alert-secondary {
+    background-color: var(--yellow-light);
+    border-color: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+/* تخصيص الشارات */
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--secondary-color) !important;
+    color: var(--dark-color);
+}
+
+/* تخصيص التبويبات */
+.nav-tabs .nav-link.active {
+    border-color: var(--secondary-color) var(--secondary-color) #fff;
+    border-top-width: 2px;
+    color: var(--dark-color);
+    font-weight: bold;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: var(--gray-light) var(--gray-light) var(--secondary-color);
+}
+
+/* تخصيص شريط التقدم */
+.progress-bar {
+    background-color: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+/* تخصيص مفاتيح التبديل */
+.facility-item-toggle:checked + .toggle-switch {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* تخصيص الروابط */
+a {
+    color: var(--gray-dark);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+/* إلغاء تأثير الخط تحت النص عند مرور مؤشر الماوس على الأزرار */
+.btn:hover, .nav-link:hover, .dropdown-item:hover, .navbar-brand:hover {
+    text-decoration: none !important;
+}
+
+/* تخصيص الخلفية */
+body {
+    background-color: #f8f9fa;
+}
+
+/* تخصيص الصفحات */
+.content-wrapper {
+    padding: 20px;
+}
+
+/* تخصيص الأيقونات */
+.fas, .far, .fab, .fa {
+    color: inherit;
+}
+
+/* تخصيص الفواصل */
+hr {
+    border-top: 1px solid var(--gray-light);
+    margin: 1.5rem 0;
+}
+
+/* تخصيص التذييل */
+footer {
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    padding: 20px 0;
+    margin-top: 30px;
+    border-top: 3px solid var(--secondary-color);
+}

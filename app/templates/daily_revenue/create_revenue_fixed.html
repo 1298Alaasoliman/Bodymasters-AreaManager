@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    /* تنسيق الصف */
+    .input-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -10px;
+        margin-right: -10px;
+        align-items: center;
+    }
+
+    /* تنسيق الأعمدة */
+    .club-column {
+        flex: 0 0 30%;
+        max-width: 30%;
+        padding: 0 10px;
+    }
+
+    .date-column {
+        flex: 0 0 40%;
+        max-width: 40%;
+        padding: 0 10px;
+    }
+
+    .amount-column {
+        flex: 0 0 30%;
+        max-width: 30%;
+        padding: 0 10px;
+    }
+
+    /* تنسيق الحقول */
+    .form-control {
+        display: block;
+        width: 100%;
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    /* تنسيق حقل التاريخ */
+    .date-wrapper {
+        position: relative;
+        width: 100%;
+        z-index: 100;
+        margin-bottom: 0;
+    }
+
+    .date-input {
+        text-align: center;
+        direction: ltr !important;
+    }
+
+    .calendar-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color:rgb(48, 47, 47);
+        pointer-events: none;
+    }
+
+    /* تنسيق حقل المبلغ */
+    .amount-input {
+        text-align: center !important;
+    }
+
+    /* تنسيق الأخطاء */
+    .error-message {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 80%;
+        color: #dc3545;
+    }
+
+    /* تنسيق زر الحفظ */
+    .submit-row {
+        margin-top: 20px;
+    }
+
+    .btn-primary {
+        color: #fff;
+        background-color: #4e73df;
+        border-color: #4e73df;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2653d4;
+    }
+
+    /* تنسيق قائمة التاريخ */
+    .datepicker-dropdown {
+        z-index: 1000 !important;
+        margin-top: 5px;
+        font-size: 0.5rem;
+        width: auto;
+    }
+
+    .datepicker table {
+        width: auto;
+        max-width: 220px;
+    }
+
+    .datepicker table th,
+    .datepicker table td {
+        padding: 4px 6px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('daily_revenue.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> العودة
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary">
+            <h6 class="m-0 font-weight-bold text-white"> بيانات الإيراد اليومي</h6>
+        </div>
+        <div class="card-body" style="padding-bottom: 300px; min-height: 350px;">
+            <form method="POST" action="{{ url_for('daily_revenue.create_revenue') }}">
+                {{ form.hidden_tag() }}
+                <div class="input-row">
+                    <div class="club-column">
+                        <div class="form-group">
+                            <label for="club_id" class="form-label">{{ form.club_id.label.text }}</label>
+                            <select id="club_id" name="club_id" class="form-control">
+                                {% for value, label in form.club_id.choices %}
+                                <option value="{{ value }}" {% if form.club_id.data == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.club_id.errors %}
+                            <div class="error-message">
+                                {% for error in form.club_id.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="date-column">
+                        <div class="form-group">
+                            <label for="date" class="form-label">{{ form.date.label.text }}</label>
+                            <div class="date-wrapper">
+                                <input type="text" id="date" name="date" class="form-control date-input" value="{{ form.date.data.strftime('%d/%m/%Y') if form.date.data else '' }}" autocomplete="off" style="height: 38px;">
+                                <i class="fas fa-calendar-alt calendar-icon"></i>
+                            </div>
+                            {% if form.date.errors %}
+                            <div class="error-message">
+                                {% for error in form.date.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="amount-column">
+                        <div class="form-group">
+                            <label for="amount" class="form-label">{{ form.amount.label.text }}</label>
+                            <input type="text" id="amount" name="amount" class="form-control amount-input" value="{{ form.amount.data or '' }}" inputmode="numeric" pattern="[0-9]+(\.[0-9]+)?" dir="ltr">
+                            {% if form.amount.errors %}
+                            <div class="error-message">
+                                {% for error in form.amount.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="submit-row">
+                    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة حقل المبلغ
+        const amountInput = document.getElementById('amount');
+
+        // إضافة مستمع حدث للتحقق من الأرقام المدخلة
+        amountInput.addEventListener('input', function(e) {
+            // السماح فقط بالأرقام الإنجليزية والنقطة العشرية
+            const value = this.value;
+            const englishDigitsOnly = value.replace(/[^0-9.]/g, '');
+
+            // التحقق من وجود نقطة عشرية واحدة فقط
+            const parts = englishDigitsOnly.split('.');
+            if (parts.length > 2) {
+                // إذا كان هناك أكثر من نقطة عشرية، احتفظ بالجزء الأول والثاني فقط
+                this.value = parts[0] + '.' + parts.slice(1).join('');
+            } else if (value !== englishDigitsOnly) {
+                // إذا كانت هناك أحرف أو أرقام غير إنجليزية، استبدلها
+                this.value = englishDigitsOnly;
+            }
+        });
+
+        // إضافة مستمع حدث للتحقق من صحة المبلغ قبل الإرسال
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const amountValue = amountInput.value.trim();
+
+            // التحقق من أن المبلغ ليس فارغًا
+            if (!amountValue) {
+                e.preventDefault();
+                alert('يرجى إدخال المبلغ');
+                amountInput.focus();
+                return false;
+            }
+
+            // التحقق من أن المبلغ رقم صحيح
+            if (!/^[0-9]+(\.[0-9]+)?$/.test(amountValue)) {
+                e.preventDefault();
+                alert('يرجى إدخال رقم صحيح للمبلغ');
+                amountInput.focus();
+                return false;
+            }
+
+            // التحقق من أن المبلغ أكبر من صفر
+            if (parseFloat(amountValue) <= 0) {
+                e.preventDefault();
+                alert('يجب أن يكون المبلغ أكبر من صفر');
+                amountInput.focus();
+                return false;
+            }
+        });
+
+        // تهيئة حقل التاريخ
+        const dateInput = document.getElementById('date');
+
+        // إضافة مستمع حدث للنقر على حقل التاريخ
+        dateInput.addEventListener('click', function() {
+            // إنشاء منتقي تاريخ مخصص باللغة الإنجليزية
+            const datepickerContainer = document.createElement('div');
+            datepickerContainer.className = 'custom-datepicker-container';
+            datepickerContainer.style.position = 'absolute';
+            datepickerContainer.style.top = '40px';
+            datepickerContainer.style.left = '0';
+            datepickerContainer.style.zIndex = '1000';
+            datepickerContainer.style.backgroundColor = 'white';
+            datepickerContainer.style.border = '1px solid #ddd';
+            datepickerContainer.style.borderRadius = '5px';
+            datepickerContainer.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+            datepickerContainer.style.padding = '10px';
+            datepickerContainer.style.width = '300px';
+            datepickerContainer.style.direction = 'ltr';
+
+            // الحصول على التاريخ الحالي أو التاريخ المحدد
+            let currentDate = new Date();
+            if (dateInput.value) {
+                const parts = dateInput.value.split('/');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    currentDate = new Date(year, month, day);
+                }
+            }
+
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+            const today = new Date();
+
+            // إنشاء رأس التقويم
+            const header = document.createElement('div');
+            header.style.display = 'flex';
+            header.style.justifyContent = 'space-between';
+            header.style.alignItems = 'center';
+            header.style.marginBottom = '10px';
+
+            // أزرار التنقل
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '&lt;';
+            prevBtn.style.border = 'none';
+            prevBtn.style.background = 'none';
+            prevBtn.style.cursor = 'pointer';
+            prevBtn.style.fontSize = '16px';
+            prevBtn.style.padding = '5px 10px';
+
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '&gt;';
+            nextBtn.style.border = 'none';
+            nextBtn.style.background = 'none';
+            nextBtn.style.cursor = 'pointer';
+            nextBtn.style.fontSize = '16px';
+            nextBtn.style.padding = '5px 10px';
+
+            // عنوان الشهر والسنة
+            const monthYearLabel = document.createElement('div');
+            monthYearLabel.style.fontWeight = 'bold';
+            monthYearLabel.style.fontSize = '16px';
+
+            header.appendChild(prevBtn);
+            header.appendChild(monthYearLabel);
+            header.appendChild(nextBtn);
+
+            datepickerContainer.appendChild(header);
+
+            // إنشاء جدول التقويم
+            const calendarTable = document.createElement('table');
+            calendarTable.style.width = '100%';
+            calendarTable.style.borderCollapse = 'collapse';
+            calendarTable.style.textAlign = 'center';
+
+            // إنشاء رأس الجدول (أيام الأسبوع)
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            daysOfWeek.forEach(day => {
+                const th = document.createElement('th');
+                th.textContent = day;
+                th.style.padding = '5px';
+                th.style.color = '#4e73df';
+                headerRow.appendChild(th);
+            });
+
+            thead.appendChild(headerRow);
+            calendarTable.appendChild(thead);
+
+            // إنشاء جسم الجدول (أيام الشهر)
+            const tbody = document.createElement('tbody');
+            calendarTable.appendChild(tbody);
+
+            datepickerContainer.appendChild(calendarTable);
+
+            // إضافة زر اليوم
+            const todayButton = document.createElement('button');
+            todayButton.textContent = 'Today';
+            todayButton.style.marginTop = '10px';
+            todayButton.style.padding = '5px 10px';
+            todayButton.style.border = 'none';
+            todayButton.style.backgroundColor = '#4e73df';
+            todayButton.style.color = 'white';
+            todayButton.style.borderRadius = '3px';
+            todayButton.style.cursor = 'pointer';
+            todayButton.style.float = 'right';
+
+            datepickerContainer.appendChild(todayButton);
+
+            // إضافة مساحة للمسح
+            const clearfix = document.createElement('div');
+            clearfix.style.clear = 'both';
+            datepickerContainer.appendChild(clearfix);
+
+            // وظيفة لعرض التقويم
+            function renderCalendar(year, month) {
+                // تحديث عنوان الشهر والسنة
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                monthYearLabel.textContent = `${monthNames[month]} ${year}`;
+
+                // مسح الجدول السابق
+                tbody.innerHTML = '';
+
+                // الحصول على اليوم الأول من الشهر
+                const firstDay = new Date(year, month, 1);
+                const startingDay = firstDay.getDay();
+
+                // الحصول على عدد أيام الشهر
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // إنشاء الخلايا
+                let date = 1;
+                let dayCount = 1;
+
+                // إنشاء الصفوف والخلايا
+                for (let i = 0; i < 6; i++) {
+                    // إنشاء صف جديد
+                    const row = document.createElement('tr');
+
+                    // إنشاء خلايا الصف
+                    for (let j = 0; j < 7; j++) {
+                        const cell = document.createElement('td');
+                        cell.style.padding = '8px';
+                        cell.style.cursor = 'pointer';
+                        cell.style.borderRadius = '5px';
+
+                        // إضافة التاريخ إلى الخلية
+                        if ((i === 0 && j < startingDay) || date > daysInMonth) {
+                            // خلية فارغة
+                            cell.textContent = '';
+                        } else {
+                            // خلية بتاريخ
+                            cell.textContent = date;
+
+                            // تنسيق اليوم الحالي
+                            if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                                cell.style.border = '1px solid #4e73df';
+                            }
+
+                            // تنسيق التاريخ المحدد
+                            if (date === currentDate.getDate() && month === currentDate.getMonth() && year === currentDate.getFullYear()) {
+                                cell.style.backgroundColor = '#4e73df';
+                                cell.style.color = 'white';
+                            }
+
+                            // إضافة مستمع حدث للنقر
+                            cell.addEventListener('click', function() {
+                                const selectedDate = new Date(year, month, parseInt(this.textContent));
+
+                                // التحقق من أن التاريخ لا يكون أكبر من تاريخ اليوم
+                                if (selectedDate > today) {
+                                    alert('لا يمكن تسجيل إيراد بتاريخ مستقبلي');
+                                    return;
+                                }
+
+                                // تنسيق التاريخ المختار
+                                const selectedDay = String(selectedDate.getDate()).padStart(2, '0');
+                                const selectedMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                                const selectedYear = selectedDate.getFullYear();
+                                dateInput.value = `${selectedDay}/${selectedMonth}/${selectedYear}`;
+
+                                // إغلاق التقويم
+                                datepickerContainer.remove();
+                            });
+
+                            // إضافة تأثير التحويم
+                            cell.addEventListener('mouseover', function() {
+                                if (!(date === currentDate.getDate() && month === currentDate.getMonth() && year === currentDate.getFullYear())) {
+                                    this.style.backgroundColor = '#f0f0f0';
+                                }
+                            });
+
+                            cell.addEventListener('mouseout', function() {
+                                if (!(date === currentDate.getDate() && month === currentDate.getMonth() && year === currentDate.getFullYear())) {
+                                    this.style.backgroundColor = '';
+                                }
+                            });
+
+                            date++;
+                        }
+
+                        row.appendChild(cell);
+                    }
+
+                    tbody.appendChild(row);
+
+                    // التوقف إذا انتهت أيام الشهر
+                    if (date > daysInMonth) {
+                        break;
+                    }
+                }
+            }
+
+            // عرض التقويم الأولي
+            renderCalendar(currentYear, currentMonth);
+
+            // إضافة مستمعات الأحداث للأزرار
+            prevBtn.addEventListener('click', function() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar(currentYear, currentMonth);
+            });
+
+            nextBtn.addEventListener('click', function() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar(currentYear, currentMonth);
+            });
+
+            todayButton.addEventListener('click', function() {
+                // التحقق من أن التاريخ لا يكون أكبر من تاريخ اليوم
+                const todayYear = today.getFullYear();
+                const todayMonth = String(today.getMonth() + 1).padStart(2, '0');
+                const todayDay = String(today.getDate()).padStart(2, '0');
+                dateInput.value = `${todayDay}/${todayMonth}/${todayYear}`;
+
+                // إغلاق التقويم
+                datepickerContainer.remove();
+            });
+
+            // إضافة مستمع حدث لإغلاق التقويم عند النقر خارجه
+            document.addEventListener('click', function(e) {
+                if (!datepickerContainer.contains(e.target) && e.target !== dateInput) {
+                    datepickerContainer.remove();
+                }
+            });
+
+            // إضافة التقويم إلى الصفحة
+            dateInput.parentNode.appendChild(datepickerContainer);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,782 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+<!-- فلتر النوادي -->
+<div class="row main-row">
+    <div class="col-md-6">
+        <div class="card shadow mb-2" style="border: none;">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2">
+                <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>التشيك</h5>
+                <div>
+                    
+                </div>
+            </div>
+            <div class="card-body py-1" style="height: 60px; display: flex; align-items: center; background-color: #ffffff; border: none;">
+                <form method="get" action="{{ url_for('facilities.index') }}" class="w-100">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="d-flex align-items-center">
+                                <label for="club_id" class="form-label fw-bold mb-0 me-2">النادي:</label>
+                                <select class="form-select form-select-sm" id="club_id" name="club_id" onchange="this.form.submit()">
+                                    <option value="">اختر النادي</option>
+                                    {% for club in clubs %}
+                                    <option value="{{ club.id }}" {% if request.args.get('club_id')|int == club.id %}selected{% endif %}>{{ club.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- بطاقة الإحصائيات الثابتة -->
+    <div class="col-md-6">
+        <div class="card shadow mb-2" style="border: none;">
+            <div class="card-header bg-info text-white py-2">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>إحصائيات التشيك</h5>
+            </div>
+            <div class="card-body py-1" style="height: 60px; display: flex; align-items: center; background-color: #ffffff; border: none;">
+                <div class="row align-items-center w-100">
+                    <div class="col-md-9">
+                        <div class="d-flex justify-content-between">
+                            <div class="text-center px-2">
+                                <span class="text-muted small d-block">إجمالي البنود</span>
+                                <span id="fixed_total_items" class="fw-bold">70</span>
+                            </div>
+                            <div class="text-center px-2">
+                                <span class="text-muted small d-block">البنود المطابقة</span>
+                                <span id="fixed_checked_items" class="fw-bold">0</span>
+                            </div>
+                            <div class="text-center px-2">
+                                <span class="text-muted small d-block">نسبة المطابقة</span>
+                                <span id="fixed_percentage" class="fw-bold">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="progress" style="height: 18px;">
+                            <div id="fixed_progress_bar" class="progress-bar bg-danger" role="progressbar" style="width: 0%; font-size: 11px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- قائمة المرافق -->
+{% if request.args.get('club_id') %}
+    {% set selected_club = clubs|selectattr('id', 'eq', request.args.get('club_id')|int)|first %}
+    {% if selected_club %}
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-building me-2"></i>{{ selected_club.name }}</h5>
+            <!-- تم إزالة زر عرض تفاصيل النادي -->
+        </div>
+        <div class="card-body">
+            <form id="checkForm" method="post" action="{{ url_for('facilities.save_check', club_id=selected_club.id) }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="club_id" value="{{ selected_club.id }}">
+
+                {% if show_check_items %}
+                <!-- عرض أنواع المرافق وبنودها -->
+                {% for facility_type in facility_types %}
+                    {% if facility_type_items[facility_type.id]|length > 0 %}
+                    <div class="card mb-3 facility-type-card" data-facility-type-id="{{ facility_type.id }}">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>{{ facility_type.name }}</h6>
+                            <div>
+                                <a href="{{ url_for('facilities.facility_type_check', facility_type_id=facility_type.id) }}" class="btn btn-sm btn-info me-2">
+                                    <i class="fas fa-eye"></i> عرض التفاصيل
+                                </a>
+                                <span class="badge bg-primary item-count" id="count_{{ facility_type.id }}">0/{{ facility_type_items[facility_type.id]|length }}</span>
+                                <span class="badge bg-danger item-percentage" id="percentage_{{ facility_type.id }}">0%</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 5%">#</th>
+                                            <th style="width: 55%">اسم البند</th>
+                                            <th style="width: 10%" class="text-center">الحالة</th>
+                                            <th style="width: 25%" class="text-center">ملاحظات</th>
+                                            <th style="width: 5%" class="text-center">صورة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in facility_type_items[facility_type.id] %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ item.name }}</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input check-item" type="checkbox"
+                                                           id="item_{{ selected_club.id }}_{{ item.id }}"
+                                                           name="items[{{ item.id }}]"
+                                                           value="1"
+                                                           data-facility-type-id="{{ facility_type.id }}"
+                                                           onchange="updateItemStatus(this)">
+                                                    <span class="item-status badge bg-danger" id="status_{{ selected_club.id }}_{{ item.id }}">غير جيد</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm" name="notes_{{ item.id }}" placeholder="ملاحظات">
+                                            </td>
+                                            <td class="text-center">
+                                                <label for="image_{{ item.id }}" class="btn btn-sm btn-outline-primary mb-0" style="cursor: pointer;">
+                                                    <i class="fas fa-camera"></i>
+                                                </label>
+                                                <input type="file" id="image_{{ item.id }}" name="image_{{ item.id }}" accept="image/*" style="display: none;" onchange="showFileName(this)">
+                                                <small id="file_name_{{ item.id }}" class="d-none text-muted"></small>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                {% endif %}
+
+                {% if show_check_items %}
+                <!-- ملخص التشيك -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>ملخص التشيك</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">ملاحظات</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-info stats-card" style="position: sticky; top: 20px;">
+                                    <h6 class="alert-heading">إحصائيات التشيك</h6>
+                                    <div class="d-flex justify-content-between">
+                                        <span>إجمالي البنود:</span>
+                                        <span id="total_items" class="fw-bold">0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>البنود المطابقة:</span>
+                                        <span id="checked_items" class="fw-bold">0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>نسبة المطابقة:</span>
+                                        <span id="percentage" class="fw-bold">0%</span>
+                                    </div>
+                                    <div class="progress mt-2">
+                                        <div id="progress_bar" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> حفظ نتائج التشيك
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle me-2"></i> لا يمكن إجراء التشيك لهذا النادي أكثر من مرة واحدة في اليوم
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i> النادي المحدد غير موجود.
+    </div>
+    {% endif %}
+{% else %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> الرجاء اختيار نادي من القائمة أعلاه لعرض بنود التشيك.
+</div>
+{% endif %}
+
+
+
+{% endblock content %}
+
+{% block scripts %}
+<style>
+    /* تنسيق لبطاقات الصفحة */
+    .card {
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
+        border-radius: 10px !important;
+        border: none !important;
+        margin-top: 0 !important;
+        transition: all 0.3s ease;
+    }
+
+    /* تنسيق لشريط التنقل */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1100;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin: 0 !important;
+    }
+
+    /* تنسيق للمحتوى الرئيسي */
+    .content-wrapper {
+        margin-top: 56px; /* ارتفاع شريط التنقل */
+        padding-top: 0;
+    }
+
+    /* تنسيق للصف الرئيسي */
+    .main-row {
+        position: sticky;
+        top: 56px; /* ارتفاع شريط التنقل */
+        z-index: 1050;
+        background-color: #f8f9fa;
+        padding: 0;
+        margin: 0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* إلغاء تأثير الحركة عند المرور بالماوس */
+    .card:hover {
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+        padding: 15px 20px !important;
+    }
+
+    .card-body {
+        padding: 20px !important;
+    }
+
+    /* تنسيق خاص لبطاقة الإحصائيات */
+    .stats-container {
+        font-weight: bold;
+    }
+
+    /* تحسين مظهر شريط التقدم */
+    .progress {
+        height: 25px !important;
+        border-radius: 10px !important;
+        overflow: hidden;
+        margin-top: 10px !important;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .progress-bar {
+        transition: width 0.5s ease;
+        font-weight: bold;
+        font-size: 14px !important;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+    }
+
+    /* تنسيق للنصوص والعناصر */
+    .form-select-lg {
+        height: 50px;
+        font-size: 1.1rem;
+    }
+
+    .fs-4 {
+        font-size: 1.5rem !important;
+    }
+
+    .text-muted {
+        font-size: 0.9rem;
+    }
+</style>
+
+<script>
+    // دالة لتحديث حالة البند
+    function updateItemStatus(checkbox) {
+        console.log(`Updating status for item ${checkbox.id}, checked: ${checkbox.checked}`);
+
+        // الحصول على معرف البند
+        const itemId = checkbox.id;
+        const statusId = itemId.replace('item_', 'status_');
+        const statusElement = document.getElementById(statusId);
+
+        // تحديث نص ولون الحالة
+        if (statusElement) {
+            if (checkbox.checked) {
+                statusElement.textContent = 'جيد';
+                statusElement.className = 'item-status badge bg-success';
+            } else {
+                statusElement.textContent = 'غير جيد';
+                statusElement.className = 'item-status badge bg-danger';
+            }
+            console.log(`Updated status element for item ${itemId}: ${statusElement.textContent}`);
+        } else {
+            console.log(`Status element for item ${itemId} not found`);
+        }
+
+        // تحديث الإحصائيات
+        const facilityTypeId = checkbox.dataset.facilityTypeId;
+        console.log(`Facility type ID for item ${itemId}: ${facilityTypeId}`);
+
+        if (facilityTypeId) {
+            // تأخير التحديث قليلاً لضمان اكتمال تحديث حالة checkbox
+            setTimeout(function() {
+                updateFacilityTypeStats(facilityTypeId);
+                updateFixedStats();
+            }, 50);
+        } else {
+            console.log(`Facility type ID not found for item ${itemId}`);
+        }
+    }
+
+    // تنفيذ الكود فور تحميل الصفحة
+    window.onload = function() {
+        // تنفيذ الدالة مباشرة
+        initializeStats();
+        updateFixedStats();
+        initializeItemStatuses();
+
+        // تنفيذ الدالة بعد فترة قصيرة
+        setTimeout(updateFixedStats, 500);
+        setTimeout(updateFixedStats, 1000);
+        setTimeout(updateFixedStats, 2000);
+
+        // تنفيذ الدالة بشكل متكرر لضمان ظهور الإحصائيات
+        setInterval(updateFixedStats, 1000);
+    };
+
+    // دالة لتهيئة حالات البنود
+    function initializeItemStatuses() {
+        console.log('Initializing item statuses');
+
+        // الحصول على جميع مربعات الاختيار
+        const checkboxes = document.querySelectorAll('.check-item');
+        console.log(`Found ${checkboxes.length} checkboxes`);
+
+        // تحديث حالة كل بند
+        checkboxes.forEach(function(checkbox) {
+            const itemId = checkbox.id;
+            const statusId = itemId.replace('item_', 'status_');
+            const statusElement = document.getElementById(statusId);
+
+            if (statusElement) {
+                if (checkbox.checked) {
+                    statusElement.textContent = 'جيد';
+                    statusElement.className = 'item-status badge bg-success';
+                } else {
+                    statusElement.textContent = 'غير جيد';
+                    statusElement.className = 'item-status badge bg-danger';
+                }
+                console.log(`Initialized status for item ${itemId}: ${statusElement.textContent}`);
+            } else {
+                console.log(`Status element for item ${itemId} not found`);
+            }
+        });
+
+        // الحصول على جميع بطاقات المرافق
+        const facilityTypeCards = document.querySelectorAll('.facility-type-card');
+        console.log(`Found ${facilityTypeCards.length} facility type cards`);
+
+        // تحديث إحصائيات كل نوع مرفق
+        facilityTypeCards.forEach(function(card) {
+            const facilityTypeId = card.dataset.facilityTypeId;
+            console.log(`Processing facility type ${facilityTypeId}`);
+
+            if (facilityTypeId) {
+                // الحصول على جميع مربعات الاختيار لنوع المرفق
+                const typeCheckboxes = document.querySelectorAll(`.check-item[data-facility-type-id="${facilityTypeId}"]`);
+                let totalItems = typeCheckboxes.length;
+                let checkedItems = 0;
+
+                // حساب عدد البنود المحددة
+                typeCheckboxes.forEach(function(checkbox) {
+                    if (checkbox.checked) {
+                        checkedItems++;
+                    }
+                });
+
+                console.log(`Facility type ${facilityTypeId}: ${checkedItems}/${totalItems} items checked`);
+
+                // حساب النسبة المئوية
+                const percentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+                // تحديث عناصر الواجهة
+                const itemCountElement = document.getElementById(`count_${facilityTypeId}`);
+                const itemPercentageElement = document.getElementById(`percentage_${facilityTypeId}`);
+
+                if (itemCountElement) {
+                    itemCountElement.textContent = `${checkedItems}/${totalItems}`;
+                    console.log(`Updated count for facility type ${facilityTypeId}: ${checkedItems}/${totalItems}`);
+                } else {
+                    console.log(`Count element for facility type ${facilityTypeId} not found`);
+                }
+
+                if (itemPercentageElement) {
+                    itemPercentageElement.textContent = `${percentage}%`;
+                    console.log(`Updated percentage for facility type ${facilityTypeId}: ${percentage}%`);
+
+                    // تغيير لون شارة النسبة المئوية بناءً على النسبة
+                    itemPercentageElement.className = 'badge item-percentage';
+                    if (percentage < 50) {
+                        itemPercentageElement.classList.add('bg-danger');
+                    } else if (percentage < 80) {
+                        itemPercentageElement.classList.add('bg-warning');
+                    } else {
+                        itemPercentageElement.classList.add('bg-success');
+                    }
+                } else {
+                    console.log(`Percentage element for facility type ${facilityTypeId} not found`);
+                }
+            }
+        });
+
+        // تحديث الإحصائيات الثابتة
+        updateFixedStats();
+    }
+
+    // تنفيذ الكود عند اكتمال تحميل DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        // التأكد من تهيئة الإحصائيات
+        setTimeout(initializeStats, 100);
+        setTimeout(initializeStats, 500);
+        setTimeout(initializeStats, 1000);
+    });
+
+    // دالة لتحديث إحصائيات نوع المرفق
+    function updateFacilityTypeStats(facilityTypeId) {
+        console.log(`Updating stats for facility type ${facilityTypeId}`);
+
+        // الحصول على جميع مربعات الاختيار لنوع المرفق
+        const checkboxes = document.querySelectorAll(`.check-item[data-facility-type-id="${facilityTypeId}"]`);
+        let totalItems = checkboxes.length;
+        let checkedItems = 0;
+
+        console.log(`Total items for facility type ${facilityTypeId}: ${totalItems}`);
+
+        // حساب عدد البنود المحددة
+        checkboxes.forEach(function(checkbox) {
+            if (checkbox.checked) {
+                checkedItems++;
+            }
+        });
+
+        console.log(`Checked items for facility type ${facilityTypeId}: ${checkedItems}`);
+
+        // حساب النسبة المئوية
+        const percentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+        console.log(`Percentage for facility type ${facilityTypeId}: ${percentage}%`);
+
+        // تحديث عناصر الواجهة باستخدام معرفات محددة
+        const itemCountElement = document.getElementById(`count_${facilityTypeId}`);
+        const itemPercentageElement = document.getElementById(`percentage_${facilityTypeId}`);
+
+        if (itemCountElement) {
+            itemCountElement.textContent = `${checkedItems}/${totalItems}`;
+            console.log(`Updated count element for facility type ${facilityTypeId}: ${checkedItems}/${totalItems}`);
+        } else {
+            console.log(`Count element for facility type ${facilityTypeId} not found`);
+        }
+
+        if (itemPercentageElement) {
+            itemPercentageElement.textContent = `${percentage}%`;
+            console.log(`Updated percentage element for facility type ${facilityTypeId}: ${percentage}%`);
+
+            // تغيير لون شارة النسبة المئوية بناءً على النسبة
+            itemPercentageElement.className = 'badge item-percentage';
+            if (percentage < 50) {
+                itemPercentageElement.classList.add('bg-danger');
+            } else if (percentage < 80) {
+                itemPercentageElement.classList.add('bg-warning');
+            } else {
+                itemPercentageElement.classList.add('bg-success');
+            }
+        } else {
+            console.log(`Percentage element for facility type ${facilityTypeId} not found`);
+        }
+
+        return { total: totalItems, checked: checkedItems, percentage: percentage };
+    }
+
+    // دالة لتهيئة الإحصائيات
+    function initializeStats() {
+        // تحديث الإحصائيات الثابتة
+        updateFixedStats();
+
+        // تحديث إحصائيات كل نوع مرفق
+        const facilityTypeCards = document.querySelectorAll('.facility-type-card');
+        facilityTypeCards.forEach(function(card) {
+            const facilityTypeId = card.dataset.facilityTypeId;
+            updateFacilityTypeStats(facilityTypeId);
+        });
+
+        // التأكد من وجود عناصر الإحصائيات القديمة
+        const totalItemsElement = document.getElementById('total_items');
+        const checkedItemsElement = document.getElementById('checked_items');
+        const percentageElement = document.getElementById('percentage');
+        const progressBarElement = document.getElementById('progress_bar');
+
+        // إذا كانت العناصر موجودة، تأكد من ظهورها
+        if (totalItemsElement && checkedItemsElement && percentageElement && progressBarElement) {
+            // التأكد من أن القيم محدثة
+            if (!totalItemsElement.textContent || totalItemsElement.textContent === '0') {
+                updateStatsDisplay();
+            }
+        }
+    }
+
+    // دالة لتحديث الإحصائيات الثابتة
+    function updateFixedStats() {
+        // حساب إجمالي البنود والبنود المحددة من جميع أنواع المرافق
+        let totalItems = 0;
+        let totalChecked = 0;
+
+        // تحديث إحصائيات كل نوع مرفق وجمع النتائج
+        const facilityTypeCards = document.querySelectorAll('.facility-type-card');
+        facilityTypeCards.forEach(function(card) {
+            const facilityTypeId = card.dataset.facilityTypeId;
+            const stats = updateFacilityTypeStats(facilityTypeId);
+            totalItems += stats.total;
+            totalChecked += stats.checked;
+        });
+
+        // إذا لم تكن هناك أنواع مرافق، استخدم الطريقة القديمة
+        if (facilityTypeCards.length === 0) {
+            // الحصول على جميع مربعات الاختيار
+            const checkboxes = document.querySelectorAll('.check-item');
+            totalItems = checkboxes.length;
+
+            // حساب عدد البنود المحددة
+            checkboxes.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    totalChecked++;
+                }
+            });
+        }
+
+        // حساب النسبة المئوية
+        const percentage = totalItems > 0 ? Math.round((totalChecked / totalItems) * 100) : 0;
+
+        // تحديث عناصر الواجهة
+        const fixedTotalItemsElement = document.getElementById('fixed_total_items');
+        const fixedCheckedItemsElement = document.getElementById('fixed_checked_items');
+        const fixedPercentageElement = document.getElementById('fixed_percentage');
+        const fixedProgressBarElement = document.getElementById('fixed_progress_bar');
+
+        if (fixedTotalItemsElement) fixedTotalItemsElement.textContent = totalItems;
+        if (fixedCheckedItemsElement) fixedCheckedItemsElement.textContent = totalChecked;
+        if (fixedPercentageElement) fixedPercentageElement.textContent = `${percentage}%`;
+
+        if (fixedProgressBarElement) {
+            fixedProgressBarElement.style.width = `${percentage}%`;
+            fixedProgressBarElement.setAttribute('aria-valuenow', percentage);
+            fixedProgressBarElement.textContent = `${percentage}%`;
+
+            // تغيير لون شريط التقدم بناءً على النسبة المئوية
+            fixedProgressBarElement.className = 'progress-bar';
+            if (percentage < 50) {
+                fixedProgressBarElement.classList.add('bg-danger');
+            } else if (percentage < 80) {
+                fixedProgressBarElement.classList.add('bg-warning');
+            } else {
+                fixedProgressBarElement.classList.add('bg-success');
+            }
+        }
+    }
+
+    // دالة لتحديث عرض الإحصائيات
+    function updateStatsDisplay() {
+        // حساب إجمالي البنود
+        let totalItems = 0;
+        let totalChecked = 0;
+
+        // الحصول على جميع مربعات الاختيار
+        const checkboxes = document.querySelectorAll('.check-item');
+        totalItems = checkboxes.length;
+
+        // حساب عدد البنود المحددة
+        checkboxes.forEach(function(checkbox) {
+            if (checkbox.checked) {
+                totalChecked++;
+            }
+        });
+
+        // حساب النسبة المئوية
+        const percentage = totalItems > 0 ? Math.round((totalChecked / totalItems) * 100) : 0;
+
+        // تحديث عناصر الواجهة
+        const totalItemsElement = document.getElementById('total_items');
+        const checkedItemsElement = document.getElementById('checked_items');
+        const percentageElement = document.getElementById('percentage');
+        const progressBarElement = document.getElementById('progress_bar');
+
+        if (totalItemsElement) totalItemsElement.textContent = totalItems;
+        if (checkedItemsElement) checkedItemsElement.textContent = totalChecked;
+        if (percentageElement) percentageElement.textContent = `${percentage}%`;
+
+        if (progressBarElement) {
+            progressBarElement.style.width = `${percentage}%`;
+            progressBarElement.setAttribute('aria-valuenow', percentage);
+            progressBarElement.textContent = `${percentage}%`;
+
+            // تغيير لون شريط التقدم بناءً على النسبة المئوية
+            progressBarElement.className = 'progress-bar';
+            if (percentage < 50) {
+                progressBarElement.classList.add('bg-danger');
+            } else if (percentage < 80) {
+                progressBarElement.classList.add('bg-warning');
+            } else {
+                progressBarElement.classList.add('bg-success');
+            }
+        }
+    }
+
+    // الكود الأصلي
+    document.addEventListener('DOMContentLoaded', function() {
+        // الحصول على جميع مربعات الاختيار
+        const checkboxes = document.querySelectorAll('.check-item');
+
+        // إنشاء قاموس لتخزين عدد البنود لكل نوع مرفق
+        const facilityTypeItems = {};
+
+        // حساب عدد البنود لكل نوع مرفق
+        checkboxes.forEach(function(checkbox) {
+            const facilityTypeId = checkbox.dataset.facilityTypeId;
+
+            // إنشاء مدخل لنوع المرفق إذا لم يكن موجودًا
+            if (!facilityTypeItems[facilityTypeId]) {
+                facilityTypeItems[facilityTypeId] = {
+                    total: 0,
+                    checked: 0
+                };
+            }
+
+            // زيادة عدد البنود الإجمالي
+            facilityTypeItems[facilityTypeId].total++;
+
+            // إضافة مستمع للحدث لتحديث العدادات عند تغيير حالة مربع الاختيار
+            checkbox.addEventListener('change', function() {
+                updateCounts(facilityTypeId, this.checked);
+            });
+        });
+
+        // تحديث العدادات الأولية
+        let totalItems = 0;
+        for (const facilityTypeId in facilityTypeItems) {
+            totalItems += facilityTypeItems[facilityTypeId].total;
+
+            const itemCountElement = document.querySelector(`.facility-type-card[data-facility-type-id="${facilityTypeId}"] .item-count`);
+            if (itemCountElement) {
+                itemCountElement.textContent = `0/${facilityTypeItems[facilityTypeId].total}`;
+            }
+        }
+
+        // تحديث إجمالي البنود
+        const totalItemsElement = document.getElementById('total_items');
+        if (totalItemsElement) {
+            totalItemsElement.textContent = totalItems;
+        }
+
+        // دالة لتحديث العدادات والنسب المئوية
+        function updateCounts(facilityTypeId, isChecked) {
+            // تحديث عدد البنود المحددة لنوع المرفق
+            if (isChecked) {
+                facilityTypeItems[facilityTypeId].checked++;
+            } else {
+                facilityTypeItems[facilityTypeId].checked--;
+            }
+
+            // حساب إجمالي البنود المحددة
+            let totalChecked = 0;
+            let totalItems = 0;
+            for (const typeId in facilityTypeItems) {
+                totalChecked += facilityTypeItems[typeId].checked;
+                totalItems += facilityTypeItems[typeId].total;
+            }
+
+            // حساب النسبة المئوية الإجمالية
+            const totalPercentage = Math.round((totalChecked / totalItems) * 100);
+
+            // حساب النسبة المئوية لنوع المرفق
+            const facilityTypePercentage = Math.round((facilityTypeItems[facilityTypeId].checked / facilityTypeItems[facilityTypeId].total) * 100);
+
+            // تحديث عناصر الواجهة
+            const checkedItemsElement = document.getElementById('checked_items');
+            const percentageElement = document.getElementById('percentage');
+            const progressBarElement = document.getElementById('progress_bar');
+
+            if (checkedItemsElement) {
+                checkedItemsElement.textContent = totalChecked;
+            }
+
+            if (percentageElement) {
+                percentageElement.textContent = `${totalPercentage}%`;
+            }
+
+            if (progressBarElement) {
+                progressBarElement.style.width = `${totalPercentage}%`;
+                progressBarElement.setAttribute('aria-valuenow', totalPercentage);
+                progressBarElement.textContent = `${totalPercentage}%`;
+
+                // تغيير لون شريط التقدم بناءً على النسبة المئوية
+                progressBarElement.className = 'progress-bar';
+                if (totalPercentage < 50) {
+                    progressBarElement.classList.add('bg-danger');
+                } else if (totalPercentage < 80) {
+                    progressBarElement.classList.add('bg-warning');
+                } else {
+                    progressBarElement.classList.add('bg-success');
+                }
+            }
+
+            // تحديث عداد ونسبة نوع المرفق
+            const itemCountElement = document.querySelector(`.facility-type-card[data-facility-type-id="${facilityTypeId}"] .item-count`);
+            const itemPercentageElement = document.querySelector(`.facility-type-card[data-facility-type-id="${facilityTypeId}"] .item-percentage`);
+
+            if (itemCountElement) {
+                itemCountElement.textContent = `${facilityTypeItems[facilityTypeId].checked}/${facilityTypeItems[facilityTypeId].total}`;
+            }
+
+            if (itemPercentageElement) {
+                itemPercentageElement.textContent = `${facilityTypePercentage}%`;
+
+                // تغيير لون شارة النسبة المئوية بناءً على النسبة
+                itemPercentageElement.className = 'badge';
+                if (facilityTypePercentage < 50) {
+                    itemPercentageElement.classList.add('bg-danger');
+                } else if (facilityTypePercentage < 80) {
+                    itemPercentageElement.classList.add('bg-warning');
+                } else {
+                    itemPercentageElement.classList.add('bg-success');
+                }
+            }
+        }
+    });
+
+    // عرض اسم الملف عند اختياره
+    function showFileName(input) {
+        const itemId = input.id.split('_')[1];
+        const fileNameElement = document.getElementById(`file_name_${itemId}`);
+
+        if (input.files && input.files[0]) {
+            // إظهار أيقونة الصح بدلاً من اسم الملف
+            const label = input.previousElementSibling;
+            label.innerHTML = '<i class="fas fa-check text-success"></i>';
+            label.classList.remove('btn-outline-primary');
+            label.classList.add('btn-outline-success');
+        }
+    }
+</script>
+</div><!-- /.content-wrapper -->
+{% endblock %}

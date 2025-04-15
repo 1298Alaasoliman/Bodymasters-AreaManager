@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-user me-2"></i>{{ employee.name }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('employees.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة الموظفين
+        </a>
+        {% if current_user.role == 'admin' or current_user.has_permission('employees', 'can_edit') %}
+        <a href="{{ url_for('employees.edit', id=employee.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit me-1"></i> تعديل
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow mb-4 border-0 rounded-3">
+            <div class="card-header bg-primary text-white rounded-top">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>معلومات الموظف</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="fw-bold"><i class="fas fa-id-card me-2 text-primary"></i>الرقم الوظيفي:</span>
+                        <span>{{ employee.employee_number }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="fw-bold"><i class="fas fa-user-tie me-2 text-primary"></i>الوظيفة:</span>
+                        <span>{{ employee.position }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="fw-bold"><i class="fas fa-user-tag me-2 text-primary"></i>الدور الوظيفي:</span>
+                        <span>{{ employee.role }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="fw-bold"><i class="fas fa-building me-2 text-primary"></i>النادي:</span>
+                        <span>{{ employee.club.name }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="fw-bold"><i class="fas fa-toggle-on me-2 text-primary"></i>الحالة:</span>
+                        <span>
+                            {% if employee.is_active %}
+                            <span class="badge bg-success rounded-pill px-3">يعمل</span>
+                            {% else %}
+                            <span class="badge bg-secondary rounded-pill px-3">مجاز</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="fw-bold"><i class="fas fa-calendar-plus me-2 text-primary"></i>تاريخ الإنشاء:</span>
+                        <span class="format-datetime">{{ employee.created_at }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="fw-bold"><i class="fas fa-calendar-check me-2 text-primary"></i>آخر تحديث:</span>
+                        <span class="format-datetime">{{ employee.updated_at }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- بطاقة جدول الدوام المدمجة -->
+        <div class="card shadow mb-4 border-0">
+            <div class="card-body p-0">
+                <!-- زر تعديل جدول الدوام -->
+                <div class="p-3 border-bottom">
+                    <div class="d-flex justify-content-start">
+                        <a href="{{ url_for('schedules.employee_schedule', employee_id=employee.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i> تعديل جدول الدوام
+                        </a>
+                    </div>
+                </div>
+
+                <!-- أيام الدوام -->
+                <div class="p-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <i class="fas fa-calendar-alt text-primary"></i>
+                        <h6 class="mb-0 fw-bold">أيام الدوام</h6>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col">
+                            <div class="p-2 border rounded mb-2">السبت</div>
+                            {% if schedule and schedule.saturday %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded mb-2">الأحد</div>
+                            {% if schedule and schedule.sunday %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded mb-2">الاثنين</div>
+                            {% if schedule and schedule.monday %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded mb-2">الثلاثاء</div>
+                            {% if schedule and schedule.tuesday %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded mb-2">الأربعاء</div>
+                            {% if schedule and schedule.wednesday %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded mb-2">الخميس</div>
+                            {% if schedule and schedule.thursday %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded mb-2">الجمعة</div>
+                            {% if schedule and schedule.friday %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- أوقات الدوام -->
+                <div class="p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <i class="fas fa-clock text-primary"></i>
+                        <h6 class="mb-0 fw-bold">أوقات الدوام</h6>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border bg-white">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="card-title mb-0">نوع الدوام</h6>
+                                        <i class="fas fa-building text-primary"></i>
+                                    </div>
+                                    <hr class="my-2">
+                                    <p class="card-text text-center">
+                                        {% if schedule and schedule.shift_type %}
+                                            {% if schedule.shift_type == 'single' %}
+                                                فترة واحدة
+                                            {% elif schedule.shift_type == 'double' %}
+                                                فترتين
+                                            {% elif schedule.shift_type == '7hours' %}
+                                                7 ساعات
+                                            {% elif schedule.shift_type == '8hours' %}
+                                                8 ساعات
+                                            {% else %}
+                                                {{ schedule.shift_type }}
+                                            {% endif %}
+                                        {% else %}
+                                            غير محدد
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border bg-white">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="card-title mb-0"> وقت الدوام</h6>
+                                        <i class="fas fa-hourglass text-primary"></i>
+                                    </div>
+                                    <hr class="my-2">
+                                    <p class="card-text text-center">
+                                        {% if schedule and schedule.shift1_start and schedule.shift1_end %}
+                                            {{ schedule.shift1_start.strftime('%H:%M') }} - {{ schedule.shift1_end.strftime('%H:%M') }}
+                                        {% else %}
+                                            غير محدد
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border bg-white">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="card-title mb-0">ساعات العمل</h6>
+                                        <i class="fas fa-truck text-primary"></i>
+                                    </div>
+                                    <hr class="my-2">
+                                    <p class="card-text text-center">
+                                        {% if schedule and schedule.shift_type %}
+                                            {% if schedule.shift_type == '7hours' %}
+                                                7 ساعات
+                                            {% elif schedule.shift_type == '8hours' %}
+                                                8 ساعات
+                                            {% elif schedule.shift1_start and schedule.shift1_end %}
+                                                {% set hours = ((schedule.shift1_end.hour * 60 + schedule.shift1_end.minute) - (schedule.shift1_start.hour * 60 + schedule.shift1_start.minute)) // 60 %}
+                                                {{ hours }} ساعات
+                                            {% else %}
+                                                8 ساعات
+                                            {% endif %}
+                                        {% else %}
+                                            8 ساعات
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+{% if current_user.role == 'admin' or current_user.has_permission('employees', 'can_delete') %}
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-trash-alt me-2"></i>حذف الموظف</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-danger">تحذير: سيؤدي حذف الموظف إلى إزالة جميع البيانات المرتبطة به بشكل دائم.</p>
+                <form method="post" action="{{ url_for('employees.delete', id=employee.id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذا الموظف؟');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i> حذف الموظف
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

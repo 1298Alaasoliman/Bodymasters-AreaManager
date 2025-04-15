@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .club-checkboxes {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 15px;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+    }
+
+    .club-item {
+        margin-bottom: 5px;
+    }
+
+    .club-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        height: 40px;
+    }
+
+    .club-label:hover {
+        background-color: #f0f0f0;
+        border-color: #0d6efd;
+    }
+
+    .checkbox-container {
+        width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-check-input {
+        margin: 0;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #adb5bd;
+    }
+
+    .club-name {
+        font-size: 0.9rem;
+        font-weight: 500;
+        flex-grow: 1;
+        text-align: right;
+        padding-right: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* لا حاجة لهذا التنسيق بعد التعديل */
+    /* .form-check-input:checked + .club-name {
+        color: #0d6efd;
+        font-weight: 600;
+    } */
+
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    /* تنسيق للنص عند تحديد مربع الاختيار */
+    .club-label:has(.form-check-input:checked) .club-name {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+    .form-check {
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: all 0.2s;
+        margin-bottom: 5px;
+    }
+
+    .form-check:hover {
+        background-color:rgb(218, 251, 109);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .card {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .card-header {
+        border-bottom: 0;
+        padding: 15px 20px;
+    }
+
+    .card-body {
+        padding: 25px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    .btn {
+        padding: 8px 20px;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>تسجيل مستخدم جديد</h4>
+                <a href="{{ url_for('auth.users') }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i> رجوع
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('auth.register') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="أدخل الرقم الوظيفي") }}
+                                {% for error in form.username.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="أدخل الاسم الكامل") }}
+                                {% for error in form.email.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                {{ form.employee_number.label(class="form-label") }}
+                                {{ form.employee_number(class="form-control" + (" is-invalid" if form.employee_number.errors else ""), placeholder="أدخل رقم الهاتف") }}
+                                {% for error in form.employee_number.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                {{ form.role.label(class="form-label") }}
+                                {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                                {% for error in form.role.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                {{ form.password.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="أدخل كلمة المرور", id="password") }}
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                {% for error in form.password.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text text-danger" id="passwordError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                {{ form.password2.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else ""), placeholder="أدخل تأكيد كلمة المرور", id="password2") }}
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword2">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                {% for error in form.password2.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text text-danger" id="password2Error"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-12">
+                            <div class="mb-2">
+                                {{ form.clubs.label(class="form-label") }}
+                                <div class="club-checkboxes">
+                                    <div class="row">
+                                        {% for value, label in form.clubs.choices %}
+                                            <div class="col-md-3 mb-2">
+                                                <div class="club-item">
+                                                    <label for="club-{{ value }}" class="club-label">
+                                                        <div class="checkbox-container">
+                                                            <input class="form-check-input" type="checkbox" name="clubs" id="club-{{ value }}" value="{{ value }}" {% if form.clubs.data and value in form.clubs.data %}checked{% endif %}>
+                                                        </div>
+                                                        <span class="club-name">{{ label }}</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% if loop.index % 4 == 0 and not loop.last %}
+                                                </div><div class="row">
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">يمكنك اختيار أكثر من نادي</small>
+                                {% for error in form.clubs.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('auth.users') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> إلغاء
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // إظهار/إخفاء كلمة المرور الأولى
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+        const passwordError = document.getElementById('passwordError');
+
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // إظهار/إخفاء تأكيد كلمة المرور
+        const togglePassword2 = document.getElementById('togglePassword2');
+        const password2 = document.getElementById('password2');
+        const password2Error = document.getElementById('password2Error');
+
+        togglePassword2.addEventListener('click', function() {
+            const type = password2.getAttribute('type') === 'password' ? 'text' : 'password';
+            password2.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // التحقق من تطابق كلمات المرور
+        password2.addEventListener('input', function() {
+            if (password.value && password2.value) {
+                if (password.value !== password2.value) {
+                    password2Error.textContent = 'كلمات المرور غير متطابقة';
+                } else {
+                    password2Error.textContent = '';
+                }
+            } else {
+                password2Error.textContent = '';
+            }
+        });
+
+        password.addEventListener('input', function() {
+            if (password.value && password2.value) {
+                if (password.value !== password2.value) {
+                    password2Error.textContent = 'كلمات المرور غير متطابقة';
+                } else {
+                    password2Error.textContent = '';
+                }
+            } else {
+                password2Error.textContent = '';
+            }
+        });
+
+        // إصلاح مشكلة الحقول
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            // تحقق من تطابق كلمات المرور
+            if (password.value !== password2.value) {
+                event.preventDefault();
+                password2Error.textContent = 'كلمات المرور غير متطابقة';
+                return false;
+            }
+
+            // إصلاح مشكلة الرقم الوظيفي ورقم الهاتف
+            const usernameField = document.getElementById('username');
+            const employeeNumberField = document.getElementById('employee_number');
+
+            if (usernameField && employeeNumberField) {
+                // تأكد من أن الرقم الوظيفي ليس فارغًا
+                if (!usernameField.value.trim()) {
+                    event.preventDefault();
+                    usernameField.classList.add('is-invalid');
+                    usernameField.nextElementSibling.textContent = 'يرجى إدخال الرقم الوظيفي';
+                    return false;
+                }
+
+                // تأكد من أن رقم الهاتف ليس فارغًا
+                if (!employeeNumberField.value.trim()) {
+                    event.preventDefault();
+                    employeeNumberField.classList.add('is-invalid');
+                    employeeNumberField.nextElementSibling.textContent = 'يرجى إدخال رقم الهاتف';
+                    return false;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

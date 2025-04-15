@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-building me-2"></i>النوادي</h4>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('clubs.create') }}" class="btn btn-primary" >
+            <i class="fas fa-plus me-1"></i> إضافة نادٍ جديد
+        </a>
+        <a href="{{ url_for('clubs.import_excel') }}" class="btn btn-success ms-2">
+            <i class="fas fa-file-excel me-1"></i> استيراد من إكسل
+        </a>
+        <button id="deleteMultipleBtn" class="btn btn-danger ms-2" style="display: none;">
+            <i class="fas fa-trash-alt me-1"></i> حذف المحدد
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>قائمة النوادي</h5>
+            </div>
+            <div class="col-auto">
+                <input type="text" id="tableSearch" class="form-control form-control-sm" placeholder="بحث..." data-table="#clubsTable">
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered table-sm" id="clubsTable" dir="rtl" style="font-weight: bold; background:rgb(252, 248, 248);">
+                <thead class="table-light">
+                    <tr>
+                        {% if current_user.role == 'admin' %}
+                        <th class="text-center align-middle" style="width: 30px; background:rgb(252, 248, 248);">
+                            <input type="checkbox" id="selectAll" class="form-check-input">
+                        </th>
+                        {% endif %}
+                        <th class="text-center align-middle" style="width: 40px; background:rgb(252, 248, 248);">#</th>
+                        <th class="text-center align-middle" style="background:rgb(252, 248, 248); ">اسم النادي</th>
+                        <th class="text-center align-middle" style="background:rgb(252, 248, 248); ">مدير النادي</th>
+                        <th class="text-center align-middle" style="width: 100px; background:rgb(252, 248, 248); ">الرقم الوظيفي</th>
+                        <th class="text-center align-middle" style="background:rgb(252, 248, 248);">الحالة</th>
+                        <th class="text-center align-middle" style="background:rgb(252, 248, 248); ">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for club in clubs %}
+                    <tr>
+                        {% if current_user.role == 'admin' %}
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input club-checkbox" data-id="{{ club.id }}" data-name="{{ club.name }}">
+                        </td>
+                        {% endif %}
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ club.name }}</td>
+                        <td>{{ club.manager_name }}</td>
+                        <td class="text-center">{% if club.employee_id %}{{ club.employee_id|int }}{% else %}غير محدد{% endif %}</td>
+                        <td class="text-center">
+                            {% if club.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                            {% else %}
+                            <span class="badge bg-secondary">غير نشط</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a href="{{ url_for('clubs.view', id=club.id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if current_user.role == 'admin' %}
+                                <a href="{{ url_for('clubs.edit', id=club.id) }}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ url_for('clubs.delete', id=club.id) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirmDelete(event, 'هل أنت متأكد من حذف هذا النادي؟')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="{% if current_user.role == 'admin' %}7{% else %}6{% endif %}" class="text-center">لا توجد أندية.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // زر تحديد الكل
+        const selectAllCheckbox = document.getElementById('selectAll');
+        // زر حذف المحدد
+        const deleteMultipleBtn = document.getElementById('deleteMultipleBtn');
+        // خانات اختيار النوادي
+        const clubCheckboxes = document.querySelectorAll('.club-checkbox');
+
+        // تحديد/إلغاء تحديد جميع النوادي
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                clubCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                updateDeleteButton();
+            });
+        }
+
+        // تحديث حالة زر الحذف عند تغيير حالة أي خانة اختيار
+        clubCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateDeleteButton();
+
+                // تحديث حالة خانة "تحديد الكل" إذا تم تحديد/إلغاء تحديد جميع النوادي
+                if (selectAllCheckbox) {
+                    const allChecked = Array.from(clubCheckboxes).every(cb => cb.checked);
+                    const noneChecked = Array.from(clubCheckboxes).every(cb => !cb.checked);
+
+                    if (allChecked) {
+                        selectAllCheckbox.checked = true;
+                        selectAllCheckbox.indeterminate = false;
+                    } else if (noneChecked) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    } else {
+                        selectAllCheckbox.indeterminate = true;
+                    }
+                }
+            });
+        });
+
+        // تحديث حالة زر الحذف (إظهار/إخفاء)
+        function updateDeleteButton() {
+            if (deleteMultipleBtn) {
+                const checkedCount = document.querySelectorAll('.club-checkbox:checked').length;
+                if (checkedCount > 0) {
+                    deleteMultipleBtn.style.display = 'inline-block';
+                    deleteMultipleBtn.textContent = `حذف المحدد (${checkedCount})`;
+                } else {
+                    deleteMultipleBtn.style.display = 'none';
+                }
+            }
+        }
+
+        // معالجة نقر زر حذف المحدد
+        if (deleteMultipleBtn) {
+            deleteMultipleBtn.addEventListener('click', function() {
+                const selectedClubs = [];
+                const selectedClubNames = [];
+
+                // جمع معرفات وأسماء النوادي المحددة
+                document.querySelectorAll('.club-checkbox:checked').forEach(checkbox => {
+                    selectedClubs.push(checkbox.dataset.id);
+                    selectedClubNames.push(checkbox.dataset.name);
+                });
+
+                if (selectedClubs.length === 0) {
+                    alert('الرجاء تحديد نادي واحد على الأقل للحذف');
+                    return;
+                }
+
+                // تأكيد الحذف
+                const confirmMessage = `هل أنت متأكد من حذف النوادي التالية؟\n${selectedClubNames.join('\n')}`;
+                if (confirm(confirmMessage)) {
+                    // إرسال طلب الحذف
+                    fetch('{{ url_for("clubs.delete_multiple") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            club_ids: selectedClubs
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            // إعادة تحميل الصفحة لتحديث القائمة
+                            window.location.reload();
+                        } else {
+                            alert('خطأ: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء معالجة الطلب');
+                    });
+                }
+            });
+        }
+
+        // تحديث حالة زر الحذف عند تحميل الصفحة
+        updateDeleteButton();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-tools me-2"></i>الأعطال</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('issues.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> إضافة عطل جديد
+        </a>
+    </div>
+</div>
+
+<div class="card shadow border-0 rounded-3">
+    <div class="card-header bg-primary text-white rounded-top">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>قائمة الأعطال</h5>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" id="tableSearch" class="form-control" placeholder="بحث..." data-table="#issuesTable">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="all">الكل</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="overdue">تخطت تاريخ الاستحقاق</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="pending">معلقة</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="closed_without_maintenance">اغلاق الطلب بدون صيانة</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover" id="issuesTable">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="background:rgb(252, 252, 252);color: #000000;">#</th>
+                        <th class="text-center"style="background:rgb(252, 252, 252);color: #000000;">النادي</th>
+                        <th class="text-center"style="background:rgb(252, 252, 252);color: #000000;">المرفق</th>
+                        <th class="text-center"style="background:rgb(252, 252, 252);color: #000000;">رقم الطلب</th>
+                        <th class="text-center"style="background:rgb(252, 252, 252);color: #000000;">تاريخ الطلب</th>
+                        <th class="text-center"style="background:rgb(252, 252, 252);color: #000000;">تاريخ الاستحقاق</th>
+                        <th class="text-center"style="background:rgb(252, 252, 252);color: #000000;">حالة الطلب</th>
+                        <th class="text-center"style="background:rgb(252, 252, 252);color: #000000;">الملاحظات</th>
+                        <th class="text-center"style="background:rgb(252, 252, 252);color: #000000;">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in issues %}
+                    <tr data-status="{{ issue.status }}">
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ issue.club.name if issue.club else '-' }}</td>
+                        <td>{{ issue.facility.name if issue.facility else '-' }}</td>
+                        <td class="text-center">{{ issue.request_number }}</td>
+                        <td class="text-center" dir="ltr">{{ issue.request_date.strftime('%d/%m/%Y') }}</td>
+                        <td class="text-center" dir="ltr">
+                            <span class="{% if issue.is_overdue and issue.status != 'closed' %}text-danger fw-bold{% endif %}">
+                                {{ issue.due_date.strftime('%d/%m/%Y') }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if issue.status == 'overdue' %}
+                            <span class="badge bg-danger">تخطت تاريخ الاستحقاق</span>
+                            {% elif issue.status == 'pending' %}
+                            <span class="badge bg-warning">معلقة</span>
+                            {% elif issue.status == 'closed_without_maintenance' %}
+                            <span class="badge bg-success">اغلاق الطلب بدون صيانة</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ issue.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ issue.notes|truncate(30) if issue.notes else '-' }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('issues.view', id=issue.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('issues.edit', id=issue.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center">لا توجد أعطال مسجلة.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تفعيل البحث في الجدول
+        const tableSearch = document.getElementById('tableSearch');
+        const clearSearch = document.getElementById('clearSearch');
+
+        if (tableSearch) {
+            tableSearch.addEventListener('keyup', function() {
+                const searchText = this.value.toLowerCase();
+                const table = document.querySelector(this.dataset.table);
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(function(row) {
+                    if (row.querySelector('td[colspan]')) return; // تجاهل صف "لا توجد أعطال"
+
+                    const text = row.textContent.toLowerCase();
+                    if (text.indexOf(searchText) > -1) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        if (clearSearch) {
+            clearSearch.addEventListener('click', function() {
+                tableSearch.value = '';
+                const table = document.querySelector(tableSearch.dataset.table);
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(function(row) {
+                    row.style.display = '';
+                });
+
+                // إعادة تفعيل الفلتر النشط
+                const activeFilter = document.querySelector('.filter-btn.active');
+                if (activeFilter) {
+                    activeFilter.click();
+                }
+            });
+        }
+
+        // تفعيل فلترة الجدول حسب الحالة
+        const filterButtons = document.querySelectorAll('.filter-btn');
+
+        filterButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                // إزالة التنشيط من جميع الأزرار
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+
+                // تنشيط الزر الحالي
+                this.classList.add('active');
+
+                const filter = this.dataset.filter;
+                const rows = document.querySelectorAll('#issuesTable tbody tr');
+
+                rows.forEach(function(row) {
+                    if (row.querySelector('td[colspan]')) return; // تجاهل صف "لا توجد أعطال"
+
+                    if (filter === 'all') {
+                        row.style.display = '';
+                    } else {
+                        const status = row.dataset.status;
+                        if (status === filter) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+
+        // تنشيط فلتر "الكل" افتراضيًا
+        document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+    });
+</script>
+{% endblock %}

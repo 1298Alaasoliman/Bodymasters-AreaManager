@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-clipboard-check me-2"></i>عناصر فحص المرفق: {{ facility.name }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('facilities.view', id=facility.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى المرفق
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>قائمة عناصر الفحص</h5>
+        <div>
+            <a href="{{ url_for('facilities.create_check_item', facility_id=facility.id) }}" class="btn btn-light btn-sm">
+                <i class="fas fa-plus me-1"></i> إضافة عنصر جديد
+            </a>
+            <a href="{{ url_for('facilities.import_check_items', facility_id=facility.id) }}" class="btn btn-light btn-sm">
+                <i class="fas fa-file-import me-1"></i> استيراد من Excel
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if check_items %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 5%">#</th>
+                            <th style="width: 55%">اسم العنصر</th>
+                            <th style="width: 10%">الحالة</th>
+                            <th style="width: 15%; text-align: center;">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in check_items %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                {{ item.name }}
+                                {% if item.is_required %}
+                                <span class="badge bg-danger ms-1">مطلوب</span>
+                                {% endif %}
+                                {% if item.description %}
+                                <small class="text-muted d-block">{{ item.description }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.is_active %}
+                                <span class="badge bg-success">نشط</span>
+                                {% else %}
+                                <span class="badge bg-secondary">غير نشط</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('facilities.edit_check_item', item_id=item.id) }}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ url_for('facilities.delete_check_item', item_id=item.id) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirmDelete(event, 'هل أنت متأكد من حذف هذا العنصر؟')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+        <p class="text-center">لا توجد عناصر فحص لهذا المرفق.</p>
+        <div class="text-center">
+            <a href="{{ url_for('facilities.create_check_item', facility_id=facility.id) }}" class="btn btn-primary me-2">
+                <i class="fas fa-plus me-1"></i> إضافة عنصر جديد
+            </a>
+            <a href="{{ url_for('facilities.import_check_items', facility_id=facility.id) }}" class="btn btn-success">
+                <i class="fas fa-file-import me-1"></i> استيراد من Excel
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

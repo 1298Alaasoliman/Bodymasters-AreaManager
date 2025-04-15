@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-clipboard-check me-2"></i>{{ facility.name }}</h2>
+        <p class="text-muted">{{ facility.club.name }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('facilities.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة إلى قائمة المرافق
+        </a>
+        {% if current_user.role == 'admin' or current_user.has_permission('facilities', 'can_edit') %}
+        <a href="{{ url_for('facilities.edit', id=facility.id) }}" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i> تعديل
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>معلومات المرفق</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-building me-2"></i>النادي:</span>
+                        <span>{{ facility.club.name }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-list-ol me-2"></i>عدد عناصر الفحص:</span>
+                        <span>{{ facility.check_items.count() }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-check-double me-2"></i>عدد الفحوصات:</span>
+                        <span>{{ facility.checks.count() }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calendar-check me-2"></i>آخر فحص:</span>
+                        <span>
+                            {% set last_check = facility.checks.order_by(FacilityCheck.check_date.desc()).first() %}
+                            {% if last_check %}
+                            <span class="format-datetime">{{ last_check.check_date }}</span>
+                            {% else %}
+                            <span class="text-muted">لم يتم الفحص بعد</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-toggle-on me-2"></i>الحالة:</span>
+                        <span>
+                            {% if facility.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                            {% else %}
+                            <span class="badge bg-secondary">غير نشط</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calendar-plus me-2"></i>تاريخ الإنشاء:</span>
+                        <span class="format-datetime">{{ facility.created_at }}</span>
+                    </li>
+                </ul>
+                {% if facility.description %}
+                <div class="mt-3">
+                    <h6><i class="fas fa-align-left me-2"></i>الوصف:</h6>
+                    <p>{{ facility.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('facilities.perform_check', facility_id=facility.id) }}" class="btn btn-success w-100">
+                    <i class="fas fa-check me-1"></i> إجراء فحص جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list-ul me-2"></i>عناصر الفحص</h5>
+                    <div>
+                        <a href="{{ url_for('facilities.create_check_item', facility_id=facility.id) }}" class="btn btn-sm btn-light me-2">
+                            <i class="fas fa-plus me-1"></i> إضافة عنصر
+                        </a>
+                        <a href="{{ url_for('facilities.import_check_items', facility_id=facility.id) }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-file-import me-1"></i> استيراد من Excel
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if check_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 5%">#</th>
+                                    <th style="width: 25%">اسم العنصر</th>
+                                    <th style="width: 40%">الوصف</th>
+                                    <th style="width: 10%">الحالة</th>
+                                    <th style="width: 20%">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in check_items %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        {{ item.name }}
+                                        {% if item.is_required %}
+                                        <span class="badge bg-danger ms-1">مطلوب</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.description or '-' }}</td>
+                                    <td>
+                                        {% if item.is_active %}
+                                        <span class="badge bg-success">نشط</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">غير نشط</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('facilities.edit_check_item', item_id=item.id) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ url_for('facilities.delete_check_item', item_id=item.id) }}" method="post" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirmDelete(event, 'هل أنت متأكد من حذف هذا العنصر؟')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                <p class="text-center">لا توجد عناصر فحص لهذا المرفق.</p>
+                <div class="text-center">
+                    <a href="{{ url_for('facilities.create_check_item', facility_id=facility.id) }}" class="btn btn-primary me-2">
+                        <i class="fas fa-plus me-1"></i> إضافة عنصر جديد
+                    </a>
+                    <a href="{{ url_for('facilities.import_check_items', facility_id=facility.id) }}" class="btn btn-success">
+                        <i class="fas fa-file-import me-1"></i> استيراد من Excel
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>سجل التشيك</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_checks %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>تاريخ الفحص</th>
+                                <th>بواسطة</th>
+                                <th>عدد العناصر</th>
+                                <th>النتيجة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for check in recent_checks %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <span class="format-datetime">{{ check.check_date }}</span>
+                                </td>
+                                <td>{{ check.user.username if check.user else 'غير معروف' }}</td>
+                                <td>{{ check.results.count() }}</td>
+                                <td>
+                                    {% set success_count = check.results.filter_by(status='passed').count() %}
+                                    {% set total_count = check.results.count() %}
+                                    {% if total_count > 0 %}
+                                    {% set success_rate = (success_count / total_count) * 100 %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if success_rate < 50 %}bg-danger{% elif success_rate < 80 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ success_rate }}%;" aria-valuenow="{{ success_rate }}" aria-valuemin="0" aria-valuemax="100">{{ success_rate|int }}%</div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">لا توجد نتائج</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('facilities.check_details', check_id=check.id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">لا توجد فحوصات سابقة لهذا المرفق.</p>
+                <div class="text-center">
+                    <a href="{{ url_for('facilities.perform_check', facility_id=facility.id) }}" class="btn btn-primary">
+                        <i class="fas fa-check me-1"></i> إجراء فحص جديد
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

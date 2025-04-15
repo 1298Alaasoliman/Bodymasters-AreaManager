@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .club-checkboxes {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 15px;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+    }
+
+    .club-item {
+        margin-bottom: 5px;
+    }
+
+    .club-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        height: 40px;
+    }
+
+    .club-label:hover {
+        background-color: #f0f0f0;
+        border-color: #0d6efd;
+    }
+
+    .checkbox-container {
+        width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-check-input {
+        margin: 0;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #adb5bd;
+    }
+
+    .club-name {
+        font-size: 0.9rem;
+        font-weight: 500;
+        flex-grow: 1;
+        text-align: right;
+        padding-right: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .club-label:has(.form-check-input:checked) {
+        background-color: #e6f0ff;
+        border-color: #0d6efd;
+    }
+
+    .club-label:has(.form-check-input:checked) .club-name {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>تعديل بيانات المستخدم</h4>
+                    <a href="{{ url_for('auth.users') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-arrow-right me-1"></i> رجوع
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('auth.edit_user', id=user.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">الرقم الوظيفي</label>
+                                    <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">الاسم</label>
+                                    <input type="text" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employee_number" class="form-label">رقم الهاتف</label>
+                                    <input type="text" class="form-control" id="employee_number" name="employee_number" value="{{ user.employee_number }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">الدور</label>
+                                    <select class="form-select" id="role" name="role" required>
+                                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>مسؤول</option>
+                                        <option value="manager" {% if user.role == 'manager' %}selected{% endif %}>مدير</option>
+                                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>مستخدم</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">كلمة المرور</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password" name="password" placeholder="أدخل كلمة المرور الجديدة (اترك فارغًا للإبقاء على كلمة المرور الحالية)">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password2" class="form-label">تأكيد كلمة المرور</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password2" name="password2" placeholder="أدخل تأكيد كلمة المرور الجديدة">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword2">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">الأندية</label>
+                                    <div class="club-checkboxes">
+                                        <div class="row">
+                                            {% for club in clubs %}
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="club-item">
+                                                        <label for="club-{{ club.id }}" class="club-label">
+                                                            <div class="checkbox-container">
+                                                                <input class="form-check-input" type="checkbox" name="clubs" id="club-{{ club.id }}" value="{{ club.id }}" {% if club.id in user_club_ids %}checked{% endif %}>
+                                                            </div>
+                                                            <span class="club-name">{{ club.name }}</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                {% if loop.index % 4 == 0 and not loop.last %}
+                                                    </div><div class="row">
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">يمكنك اختيار أكثر من نادي</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('auth.users') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> حفظ التغييرات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // إظهار/إخفاء كلمة المرور الأولى
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // إظهار/إخفاء تأكيد كلمة المرور
+        const togglePassword2 = document.getElementById('togglePassword2');
+        const password2 = document.getElementById('password2');
+
+        togglePassword2.addEventListener('click', function() {
+            const type = password2.getAttribute('type') === 'password' ? 'text' : 'password';
+            password2.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    });
+</script>
+{% endblock %}

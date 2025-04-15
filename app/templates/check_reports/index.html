@@ -1,0 +1,981 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<!-- إضافة مكتبة Bootstrap Datepicker لاختيار التاريخ -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+<style>
+    .card-dashboard {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+        margin-bottom: 20px;
+    }
+
+    .card-dashboard:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header-custom {
+        background-color: #343a40;
+        color: white;
+        border-radius: 10px 10px 0 0 !important;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 500px;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .filter-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    /* أنماط للبطاقة الثابتة */
+    .sticky-top {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 5px 0;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .table-container {
+        margin-top: 20px;
+    }
+
+    .table th {
+        background-color: #343a40;
+        color: white;
+    }
+
+    .badge-custom {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+
+    /* تنسيق حقول التاريخ */
+    .custom-datepicker {
+        text-align: center;
+        font-family: 'Calibri', sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        direction: ltr !important;
+        unicode-bidi: isolate !important;
+        background-color: white;
+        color: #333;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        width: 100% !important;
+    }
+
+    /* زيادة عرض عمود حقول التاريخ */
+    .date-field-column {
+        min-width: 250px !important;
+        width: auto !important;
+    }
+
+    /* زيادة عرض حقول التاريخ نفسها */
+    .custom-datepicker {
+        width: 100% !important;
+        min-width: 250px !important;
+    }
+
+    /* تغيير لون الحدود عند التركيز */
+    .custom-datepicker:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+    /* تنسيق مكتبة Bootstrap Datepicker */
+    .datepicker {
+        z-index: 9999 !important;
+        padding: 10px;
+        direction: ltr;
+        font-family: 'Calibri', sans-serif;
+        font-size: 14px;
+    }
+
+    .datepicker-dropdown {
+        top: 0;
+        left: 0;
+        padding: 10px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .datepicker table tr td.active.active,
+    .datepicker table tr td.active.highlighted.active,
+    .datepicker table tr td.active.highlighted:active,
+    .datepicker table tr td.active:active {
+        background-color: #007bff !important;
+        border-color: #007bff !important;
+    }
+
+    .datepicker table tr td,
+    .datepicker table tr th {
+        text-align: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 4px;
+    }
+
+    .date-input-container {
+        position: relative;
+    }
+
+    /* إخفاء أيقونة التقويم الافتراضية */
+    ::-webkit-calendar-picker-indicator {
+        display: none !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* إخفاء الأيقونات الإضافية أسفل الحقل */
+    img[src*="calendar"],
+    img[src*="date"],
+    .datepicker-trigger,
+    .ui-datepicker-trigger,
+    .date-picker-button,
+    .calendar-icon,
+    .date-input-container + img,
+    .date-input-container ~ img,
+    .datepicker + img,
+    .datepicker ~ img,
+    .datepicker-dropdown + img,
+    .datepicker-dropdown ~ img,
+    .input-group + img,
+    .input-group ~ img,
+    input[type="text"] + img,
+    input[type="text"] ~ img,
+    .date-field-column img:not(.fa):not(.fas):not(.far):not(.fab),
+    .date-field-column + img,
+    .date-field-column ~ img,
+    .date-field-column > img,
+    .date-field-column img,
+    .col-md-3 > img:not(.fa):not(.fas):not(.far):not(.fab),
+    .col-md-3 + img:not(.fa):not(.fas):not(.far):not(.fab),
+    .col-md-3 ~ img:not(.fa):not(.fas):not(.far):not(.fab),
+    .form-control + img,
+    .form-control ~ img,
+    .form-control-sm + img,
+    .form-control-sm ~ img {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        position: absolute !important;
+        pointer-events: none !important;
+        z-index: -9999 !important;
+        top: -9999px !important;
+        left: -9999px !important;
+    }
+
+    /* إضافة طبقة لإخفاء الأيقونات */
+    .date-field-column {
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* أنماط بطاقات الإحصائيات */
+    .stats-card {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        transition: all 0.3s ease;
+        height: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .stats-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .stats-card-title {
+        color: #333;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 8px;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .date-field-column::after {
+        content: '';
+        position: absolute;
+        top: 35px;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        background-color: white;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+
+
+    /* إخفاء أي عناصر إضافية من Bootstrap Datepicker */
+    .bootstrap-datetimepicker-widget,
+    .datepicker-days,
+    .datepicker-months,
+    .datepicker-years,
+    .datepicker-decades,
+    .datepicker-centuries {
+        z-index: 9999 !important;
+    }
+
+    /* إخفاء الأيقونات الإضافية أسفل الحقل */
+    .datepicker ~ *:not(.input-group-append):not(.input-group-text):not(label):not(input):not(select):not(textarea):not(button):not(.form-control):not(.form-group):not(.input-group):not(.card):not(.card-body):not(.card-header):not(.card-footer):not(.row):not(.col):not(.container):not(.container-fluid):not(.navbar):not(.navbar-nav):not(.nav):not(.nav-item):not(.nav-link):not(.dropdown):not(.dropdown-menu):not(.dropdown-item):not(.btn):not(.btn-group):not(.alert):not(.badge):not(.breadcrumb):not(.pagination):not(.progress):not(.spinner-border):not(.spinner-grow):not(.toast):not(.modal):not(.tooltip):not(.popover):not(.carousel):not(.jumbotron):not(.list-group):not(.media):not(.table):not(.form-check):not(.custom-control):not(.custom-checkbox):not(.custom-radio):not(.custom-switch):not(.custom-select):not(.custom-file):not(.custom-range):not(.custom-control-input):not(.custom-control-label):not(.custom-file-input):not(.custom-file-label):not(.form-control-plaintext):not(.form-control-range):not(.form-control-file):not(.form-control-color):not(.form-control-sm):not(.form-control-lg):not(.form-control-feedback):not(.valid-feedback):not(.invalid-feedback):not(.valid-tooltip):not(.invalid-tooltip):not(.was-validated):not(.is-valid):not(.is-invalid):not(.needs-validation):not(.form-inline):not(.form-row):not(.form-group-sm):not(.form-group-lg):not(.input-group-sm):not(.input-group-lg):not(.input-group-prepend):not(.input-group-append):not(.input-group-text):not(.btn-sm):not(.btn-lg):not(.btn-block):not(.dropdown-toggle):not(.dropdown-menu-right):not(.dropdown-menu-left):not(.dropdown-item-text):not(.dropdown-header):not(.dropdown-divider):not(.dropleft):not(.dropright):not(.dropup):not(.dropdown-toggle-split):not(.btn-toolbar):not(.btn-group-toggle):not(.btn-group-vertical):not(.btn-group-sm):not(.btn-group-lg):not(.btn-outline-primary):not(.btn-outline-secondary):not(.btn-outline-success):not(.btn-outline-danger):not(.btn-outline-warning):not(.btn-outline-info):not(.btn-outline-light):not(.btn-outline-dark):not(.btn-primary):not(.btn-secondary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):not(.btn-light):not(.btn-dark):not(.btn-link):not(.badge-primary):not(.badge-secondary):not(.badge-success):not(.badge-danger):not(.badge-warning):not(.badge-info):not(.badge-light):not(.badge-dark):not(.alert-primary):not(.alert-secondary):not(.alert-success):not(.alert-danger):not(.alert-warning):not(.alert-info):not(.alert-light):not(.alert-dark):not(.bg-primary):not(.bg-secondary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-light):not(.bg-dark):not(.bg-white):not(.bg-transparent):not(.text-primary):not(.text-secondary):not(.text-success):not(.text-danger):not(.text-warning):not(.text-info):not(.text-light):not(.text-dark):not(.text-white):not(.text-body):not(.text-muted):not(.text-black-50):not(.text-white-50):not(.text-hide):not(.text-decoration-none):not(.text-reset):not(.text-monospace):not(.text-justify):not(.text-nowrap):not(.text-truncate):not(.text-left):not(.text-right):not(.text-center) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        position: absolute !important;
+        pointer-events: none !important;
+    }
+
+    /* إخفاء قائمة أسماء الشهور التي تظهر في نهاية الصفحة */
+    body > div:last-child:not(.container):not(.container-fluid):not(.card):not(.row):not(.col):not(.datepicker-dropdown):not(.modal):not(.sticky-top):not([id]) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+    }
+
+    /* إخفاء أي عناصر غير مرغوب فيها من مكتبة Bootstrap Datepicker */
+    .datepicker-dropdown:after,
+    .datepicker-dropdown:before {
+        display: none !important;
+    }
+
+    /* أنماط زر الطباعة */
+    .print-btn {
+        padding: 3px 10px;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        border: 1px solid #343a40;
+        color: #343a40;
+        transition: all 0.3s ease;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: inline-block !important;
+    }
+
+    .print-btn:hover {
+        background-color: #343a40;
+        color: white;
+    }
+
+    /* أنماط للطباعة */
+    @media print {
+        @page {
+            size: landscape;
+            margin: 5mm;
+            scale: 0.8; /* تصغير المحتوى ليظهر كاملاً */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body * {
+            visibility: hidden;
+        }
+
+        .print-content, .print-content * {
+            visibility: visible;
+        }
+
+        .print-content {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 90% !important; /* تقليل العرض للتأكد من ظهور كل المحتوى */
+            height: auto;
+            overflow: visible;
+            transform: scale(0.9); /* تصغير المحتوى */
+            transform-origin: top center; /* نقطة بداية التصغير */
+            margin: 0 auto; /* توسيط المحتوى */
+        }
+
+        .print-content .card-body {
+            page-break-inside: avoid;
+        }
+
+        .print-btn {
+            display: none !important;
+        }
+
+        .chart-container {
+            width: 100% !important;
+            height: 400px !important;
+            max-height: 400px !important;
+            page-break-inside: avoid;
+        }
+
+        /* إظهار معلومات النادي والتواريخ عند الطباعة */
+        .print-info {
+            display: block !important;
+            visibility: visible !important;
+            margin-bottom: 20px !important;
+            padding: 15px !important;
+            border: 1px solid #000 !important;
+            border-radius: 5px !important;
+            background-color: #f9f9f9 !important;
+            text-align: center !important;
+            direction: rtl !important;
+        }
+
+        .print-info h4 {
+            font-size: 20px !important;
+            font-weight: bold !important;
+            margin-bottom: 15px !important;
+            color: #000 !important;
+        }
+
+        .print-info .d-flex {
+            display: flex !important;
+            justify-content: space-around !important;
+            flex-wrap: wrap !important;
+        }
+
+        .print-info .d-flex > div {
+            margin: 0 10px !important;
+            font-size: 16px !important;
+            color: #000 !important;
+        }
+
+        .print-info strong {
+            font-weight: bold !important;
+            margin-right: 5px !important;
+            color: #000 !important;
+        }
+
+        /* تنسيق البطاقات عند الطباعة */
+        .stats-card {
+            page-break-inside: avoid !important;
+            margin-bottom: 15px !important;
+            transform: scale(0.9) !important;
+            border: 1px solid #ddd !important;
+        }
+
+        /* تنسيق التواريخ */
+        .print-date {
+            font-family: 'Calibri', sans-serif !important;
+            font-weight: bold !important;
+            direction: ltr !important;
+            display: inline-block !important;
+            color: #000 !important;
+        }
+
+        /* تنسيق اسم النادي */
+        .print-club-name {
+            font-weight: bold !important;
+            color: #000 !important;
+        }
+
+        /* تصغير الرسم البياني */
+        canvas {
+            max-height: 350px !important;
+            transform: scale(0.9) !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- قسم الفلاتر الثابت -->
+<div class="sticky-top" style="top: 10px; z-index: 1000;">
+    <div class="card filter-section" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px; padding: 0;">
+        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>تقارير التشيك</h5>
+        </div>
+        <div class="card-body py-2">
+            <form method="get" action="{{ url_for('check_reports.index') }}" id="filterForm">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div style="width: 23%; margin-right: 10px;">
+                                <select class="form-select form-select-sm" id="club_id" name="club_id" style="height: 35px; font-size: 0.9rem;">
+                                    <option value="">جميع النوادي</option>
+                                    {% for club in clubs %}
+                                    <option value="{{ club.id }}" {% if selected_club_id == club.id %}selected{% endif %}>{{ club.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div style="width: 23%; margin-right: 10px;">
+                                <div class="position-relative">
+                                    <input type="text" class="form-control form-control-sm text-center" id="start_date" name="start_date" value="{{ start_date }}" dir="ltr" lang="en-US" autocomplete="off" readonly style="height: 35px; font-size: 0.9rem; padding-right: 30px;" placeholder="من تاريخ">
+                                    <i class="fas fa-calendar-alt text-primary position-absolute" style="top: 10px; right: 10px;"></i>
+                                </div>
+                            </div>
+                            <div style="width: 23%; margin-right: 10px;">
+                                <div class="position-relative">
+                                    <input type="text" class="form-control form-control-sm text-center" id="end_date" name="end_date" value="{{ end_date }}" dir="ltr" lang="en-US" autocomplete="off" readonly style="height: 35px; font-size: 0.9rem; padding-right: 30px;" placeholder="إلى تاريخ">
+                                    <i class="fas fa-calendar-alt text-primary position-absolute" style="top: 10px; right: 10px;"></i>
+                                </div>
+                            </div>
+                            <div style="width: 23%;">
+                                <button type="submit" class="btn btn-sm btn-warning w-100" style="height: 35px;">
+                                    <i class="fas fa-filter me-1"></i> تصفية
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<!-- مسافة لتجنب تداخل المحتوى مع البطاقة الثابتة -->
+<div style="height: 20px;"></div>
+
+<!-- بطاقات الإحصائيات -->
+<div class="row mb-4">
+    {% if selected_club_id %}
+        <!-- إحصائيات لنادي محدد -->
+        <div class="col-12 mb-4">
+            <div class="card card-dashboard">
+                <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">إحصائيات النادي</h5>
+                    <button type="button" class="btn btn-sm btn-outline-dark print-btn" onclick="printStatsCards()">
+                        <i class="fas fa-print"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- معلومات النادي والتواريخ للطباعة -->
+                    <div class="print-info mb-3" style="display: none;">
+                        <h4 class="text-center mb-3">تقرير إحصائيات النادي</h4>
+                        <div class="d-flex justify-content-center">
+                            <div class="mx-3">
+                                <strong>النادي:</strong>
+                                <span class="print-club-name">
+                                {% if selected_club_id %}
+                                    {% for club in clubs %}
+                                        {% if club.id == selected_club_id %}
+                                            {{ club.name }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    جميع النوادي
+                                {% endif %}
+                                </span>
+                            </div>
+                            <div class="mx-3">
+                                <strong>من تاريخ:</strong> <span class="print-date">{{ start_date }}</span>
+                            </div>
+                            <div class="mx-3">
+                                <strong>إلى تاريخ:</strong> <span class="print-date">{{ end_date }}</span>
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="row" id="stats-cards-container">
+                        <div class="col-md-3">
+                            <div class="stats-card text-center p-3">
+                                <h6 class="stats-card-title">تشيك المرافق</h6>
+                                <div class="stat-value">{{ facility_stats.total_checks }}</div>
+                                <div class="stat-label">إجمالي التشيكات</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card text-center p-3">
+                                <h6 class="stats-card-title">مخالفات المرافق</h6>
+                                <div class="stat-value">{{ facility_stats.total_violations }}</div>
+                                <div class="stat-label">إجمالي المخالفات</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card text-center p-3">
+                                <h6 class="stats-card-title">الإجراءات النظامية</h6>
+                                <div class="stat-value">{{ camera_stats.legal_violations }}</div>
+                                <div class="stat-label">إجمالي المخالفات النظامية</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card text-center p-3">
+                                <h6 class="stats-card-title">مخالفات الكاميرات</h6>
+                                <div class="stat-value">{{ camera_stats.total_violations }}</div>
+                                <div class="stat-label">إجمالي المخالفات</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- إحصائيات لجميع النوادي -->
+        <div class="col-12">
+            <div class="card card-dashboard">
+                <div class="card-header card-header-custom d-flex justify-content-between align-items-center" >
+                    <h5 class="mb-0">إحصائيات النوادي</h5>
+                    <button type="button" class="btn btn-sm btn-outline-dark print-btn" onclick="printCard(this)">
+                        <i class="fas fa-print"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="background:rgb(245, 245, 245);color: #000000;">النادي</th>
+                                    <th class="text-center" style="background:rgb(245, 245, 245);color: #000000;">تشيك المرافق</th>
+                                    <th class="text-center" style="background:rgb(245, 245, 245);color: #000000;"> المرافق غير مطابقة</th>
+                                    <th class="text-center" style="background:rgb(245, 245, 245);color: #000000;">الإجراءات النظامية</th>
+                                    <th class="text-center" style="background:rgb(245, 245, 245);color: #000000;">مخالفات الكاميرات</th>
+                                    <th class="text-center" style="background:rgb(245, 245, 245);color: #000000;">إجمالي مخالفات الكاميرات والإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for club in clubs %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('check_reports.index', club_id=club.id) }}{% if start_date %}?start_date={{ start_date }}&end_date={{ end_date }}{% endif %}">
+                                            {{ club.name }}
+                                        </a>
+                                    </td>
+                                    <td class="text-center">{{ facility_stats.get(club.id, {}).get('total_checks', 0) }}</td>
+                                    <td class="text-center">{{ facility_stats.get(club.id, {}).get('total_violations', 0) }}</td>
+                                    <td class="text-center">{{ camera_stats.get(club.id, {}).get('legal_violations', 0) }}</td>
+                                    <td class="text-center">{{ camera_stats.get(club.id, {}).get('total_violations', 0) }}</td>
+                                    <td class="text-center">
+                                        {{ camera_stats.get(club.id, {}).get('total_violations', 0) + camera_stats.get(club.id, {}).get('legal_violations', 0) }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- الرسم البياني -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-dashboard">
+            <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">تحليل التشيكات والمخالفات</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark print-btn" onclick="printCard(this)">
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="checksChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول التشيكات اليومية -->
+<div class="row">
+    <div class="col-12">
+        <div class="card card-dashboard">
+            <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">التشيكات اليومية</h5>
+                <button type="button" class="btn btn-sm btn-outline-dark print-btn" onclick="printCard(this)">
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th class="text-center">تشيك المرافق</th>
+                                <th class="text-center">مخالفات المرافق</th>
+                                <th class="text-center">الإجراءات النظامية</th>
+                                <th class="text-center">مخالفات الكاميرات</th>
+                                <th class="text-center">إجمالي مخالفات الكاميرات والإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in daily_stats %}
+                            <tr>
+                                <td>{{ day.date }}</td>
+                                <td class="text-center">{{ day.facility_checks }}</td>
+                                <td class="text-center">{{ day.facility_violations }}</td>
+                                <td class="text-center">{{ day.legal_violations }}</td>
+                                <td class="text-center">{{ day.camera_violations }}</td>
+                                <td class="text-center">{{ day.camera_violations + day.legal_violations }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.ar.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة حقول التاريخ
+        $('#start_date, #end_date').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            todayHighlight: true,
+            language: 'ar',
+            rtl: true,
+            zIndexOffset: 9999,
+            orientation: "bottom",
+            container: 'body',
+            clearBtn: false,
+            templates: {
+                leftArrow: '<i class="fas fa-chevron-left"></i>',
+                rightArrow: '<i class="fas fa-chevron-right"></i>'
+            }
+        });
+
+        // إضافة معالجات للنقر على حقول التاريخ وأيقونات التقويم
+        $('#start_date, #end_date, .fa-calendar-alt').on('click', function() {
+            var $input = $(this).hasClass('fa-calendar-alt') ?
+                        $(this).closest('.position-relative').find('input') :
+                        $(this);
+
+            $input.datepicker('show');
+
+            // التأكد من أن التقويم مرئي وفوق جميع العناصر
+            setTimeout(function() {
+                var $dropdown = $('.datepicker-dropdown');
+                $dropdown.css({
+                    'z-index': '9999',
+                    'position': 'absolute',
+                    'display': 'block'
+                });
+
+                // التأكد من أن التقويم لا يظهر داخل البطاقة
+                var offset = $input.offset();
+                var height = $input.outerHeight();
+                $dropdown.css({
+                    'top': (offset.top + height) + 'px',
+                    'left': offset.left + 'px'
+                });
+
+                // التأكد من أن التقويم موجود في body
+                if ($dropdown.parent().is('body') === false) {
+                    $dropdown.detach().appendTo('body');
+                }
+            }, 10);
+        });
+
+        // إضافة معالج لتغيير لون الخلفية عند اختيار تاريخ
+        $('.datepicker').on('changeDate', function() {
+            $(this).addClass('has-value');
+        });
+
+        // إضافة معالج للتأكد من أن قائمة التاريخ تظهر بشكل صحيح
+        $('.datepicker').on('show', function(e) {
+            var $this = $(this);
+            setTimeout(function() {
+                var $dropdown = $('.datepicker-dropdown');
+                $dropdown.css({
+                    'z-index': '9999',
+                    'position': 'absolute',
+                    'display': 'block'
+                });
+
+                // التأكد من أن التقويم لا يظهر داخل البطاقة
+                var offset = $this.offset();
+                var height = $this.outerHeight();
+                $dropdown.css({
+                    'top': (offset.top + height) + 'px',
+                    'left': offset.left + 'px'
+                });
+
+                // التأكد من أن التقويم موجود في body
+                if ($dropdown.parent().is('body') === false) {
+                    $dropdown.detach().appendTo('body');
+                }
+
+                // إزالة الأيقونات الإضافية
+                removeExtraIcons();
+            }, 10);
+        });
+
+        // دالة لإزالة الأيقونات الإضافية
+        function removeExtraIcons() {
+            // إزالة جميع الصور في الصفحة باستثناء الصور المعروفة
+            $('img').each(function() {
+                var src = $(this).attr('src') || '';
+                if (src.includes('calendar') || src.includes('date') || !src) {
+                    $(this).remove();
+                }
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('.date-input-container').each(function() {
+                $(this).nextAll('img, svg, button:not(.btn), a:not(.btn), span:not(.input-group-text), div:not(.input-group-append):not(.input-group-text)').remove();
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('.datepicker').each(function() {
+                $(this).nextAll('img, svg, button:not(.btn), a:not(.btn), span:not(.input-group-text), div:not(.input-group-append):not(.input-group-text)').remove();
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('.col-md-3').each(function() {
+                $(this).find('img:not(.fa):not(.fas):not(.far):not(.fab)').remove();
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('.date-field-column').each(function() {
+                var column = $(this);
+                column.find('img').remove();
+
+                // إضافة عنصر لإخفاء الأيقونات
+                var overlay = $('<div class="date-field-overlay"></div>');
+                overlay.css({
+                    'position': 'absolute',
+                    'top': '35px',
+                    'left': '0',
+                    'width': '100%',
+                    'height': '100px',
+                    'background-color': 'white',
+                    'z-index': '5',
+                    'pointer-events': 'none'
+                });
+                column.css('position', 'relative').append(overlay);
+            });
+
+            // إزالة أي عناصر إضافية بعد حقول التاريخ
+            $('body').append('<style>.datepicker ~ img, .datepicker + img, .date-input-container ~ img, .date-input-container + img, .date-field-column img:not(.fa):not(.fas):not(.far):not(.fab) { display: none !important; visibility: hidden !important; opacity: 0 !important; width: 0 !important; height: 0 !important; position: absolute !important; pointer-events: none !important; }</style>');
+        }
+
+        // إضافة كود لإخفاء قائمة الشهور
+        function hideMonthsList() {
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                var div = divs[i];
+                if (!div.classList.contains('container') &&
+                    !div.classList.contains('container-fluid') &&
+                    !div.classList.contains('row') &&
+                    !div.classList.contains('col') &&
+                    !div.classList.contains('card') &&
+                    !div.classList.contains('datepicker-dropdown') &&
+                    !div.classList.contains('modal') &&
+                    !div.classList.contains('sticky-top') &&
+                    !div.id) {
+
+                    var text = div.textContent.trim();
+                    if (text.includes('يناير') || text.includes('فبراير') || text.includes('مارس')) {
+                        div.style.display = 'none';
+                        div.style.visibility = 'hidden';
+                        div.style.opacity = '0';
+                        div.style.pointerEvents = 'none';
+                        div.style.height = '0';
+                        div.style.width = '0';
+                        div.style.overflow = 'hidden';
+                        div.style.position = 'absolute';
+                        div.style.top = '-9999px';
+                        div.style.left = '-9999px';
+                    }
+                }
+            }
+
+            // إزالة الأيقونات الإضافية
+            removeExtraIcons();
+        }
+
+        // تنفيذ الدالة بعد تحميل الصفحة
+        setTimeout(hideMonthsList, 100);
+        setTimeout(hideMonthsList, 500);
+        setTimeout(hideMonthsList, 1000);
+        setTimeout(hideMonthsList, 2000);
+
+        // تنفيذ الدالة عند النقر على أي مكان في الصفحة
+        document.addEventListener('click', function() {
+            setTimeout(hideMonthsList, 100);
+        });
+
+        // تنفيذ الدالة عند تحميل الصفحة بالكامل
+        $(window).on('load', function() {
+            removeExtraIcons();
+            setTimeout(removeExtraIcons, 100);
+            setTimeout(removeExtraIcons, 500);
+            setTimeout(removeExtraIcons, 1000);
+
+            // تنفيذ الدالة بشكل متكرر كل 500 مللي ثانية
+            setInterval(removeExtraIcons, 500);
+        });
+
+        // تنفيذ الدالة عند النقر على حقول التاريخ
+        $(document).on('click', '.datepicker, .date-input-container, .input-group-text', function() {
+            setTimeout(removeExtraIcons, 10);
+            setTimeout(removeExtraIcons, 100);
+            setTimeout(removeExtraIcons, 300);
+        });
+
+        // تنفيذ الدالة عند تغيير حجم النافذة
+        $(window).on('resize', function() {
+            removeExtraIcons();
+        });
+
+        // تنفيذ الدالة عند التمرير
+        $(window).on('scroll', function() {
+            removeExtraIcons();
+        });
+
+        // دالة لطباعة البطاقة
+        window.printCard = function(button) {
+            // الحصول على البطاقة التي تحتوي على الزر
+            var card = $(button).closest('.card');
+
+            // إذا كانت البطاقة تحتوي على رسم بياني، نتأكد من أنه جاهز للطباعة
+            if (card.find('canvas').length > 0) {
+                // التأكد من أن الرسم البياني مرئي وبالحجم المناسب
+                var chartContainer = card.find('.chart-container');
+                chartContainer.css({
+                    'width': '100%',
+                    'height': '400px',
+                    'max-height': '400px',
+                    'margin-bottom': '20px'
+                });
+            }
+
+            // إضافة فئة للطباعة
+            card.addClass('print-content');
+
+            // إعطاء وقت للمتصفح لتحديث العرض
+            setTimeout(function() {
+                // طباعة الصفحة
+                window.print();
+
+                // إزالة فئة الطباعة بعد الانتهاء
+                setTimeout(function() {
+                    card.removeClass('print-content');
+                }, 500);
+            }, 300);
+        };
+
+        // دالة لطباعة بطاقات الإحصائيات الأربعة
+        window.printStatsCards = function() {
+            // الحصول على حاوية البطاقات
+            var container = $('#stats-cards-container').closest('.card');
+
+            // إظهار معلومات النادي والتواريخ قبل الطباعة
+            $('.print-info').show();
+
+            // تصغير الرسم البياني ليظهر كاملاً
+            $('.chart-container').css({
+                'width': '90%',
+                'height': '350px',
+                'max-height': '350px',
+                'margin': '0 auto'
+            });
+
+            // تصغير البطاقات لتظهر كاملة
+            $('.stats-card').css({
+                'transform': 'scale(0.9)',
+                'transform-origin': 'center center'
+            });
+
+            // إضافة فئة للطباعة
+            container.addClass('print-content');
+
+            // إعطاء وقت للمتصفح لتحديث العرض
+            setTimeout(function() {
+                // طباعة الصفحة
+                window.print();
+
+                // إخفاء معلومات النادي والتواريخ بعد الطباعة
+                $('.print-info').hide();
+
+                // إعادة الرسم البياني إلى حجمه الأصلي
+                $('.chart-container').css({
+                    'width': '100%',
+                    'height': '400px',
+                    'max-height': '400px',
+                    'margin': '0'
+                });
+
+                // إعادة البطاقات إلى حجمها الأصلي
+                $('.stats-card').css({
+                    'transform': 'none',
+                    'transform-origin': 'center center'
+                });
+
+                // إزالة فئة الطباعة بعد الانتهاء
+                setTimeout(function() {
+                    container.removeClass('print-content');
+                }, 500);
+            }, 500); // زيادة وقت الانتظار للتأكد من تطبيق جميع التغييرات
+        };
+
+        // تهيئة الرسم البياني
+        const ctx = document.getElementById('checksChart').getContext('2d');
+        let checksChart;
+
+        // جلب بيانات الرسم البياني
+        fetch(`{{ url_for('check_reports.chart_data') }}?club_id={{ selected_club_id or '' }}&start_date={{ start_date }}&end_date={{ end_date }}`)
+            .then(response => response.json())
+            .then(data => {
+                // إنشاء الرسم البياني
+                checksChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'تحليل التشيكات والمخالفات'
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching chart data:', error);
+            });
+    });
+</script>
+{% endblock %}

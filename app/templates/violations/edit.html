@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" style="font-family: 'Cairo', sans-serif; font-weight: normal;"><i class="fas fa-edit me-2"></i>تعديل المخالفة</h5>
+                    <div>
+                        <a href="{{ url_for('violations.index') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-right me-1"></i> رجوع
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('violations.edit', id=violation.id) }}">
+                        {{ form.csrf_token }}
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.employee_id.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.employee_id(class="form-control text-center", id="employee_id", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold; direction: ltr;", readonly=true) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.employee_name.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.employee_name(class="form-control", id="employee_name", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;", readonly=true) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.job_role.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.job_role(class="form-control", id="job_role", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;", readonly=true) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.employee_club.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.employee_club(class="form-control", id="employee_club", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;", readonly=true) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.violation_type_id.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.violation_type_id(class="form-select", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.source.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.source(class="form-select", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.violation_number.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.violation_number(class="form-control text-center", id="violation_number", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold; direction: ltr;", readonly=true) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4 date-field-column">
+                                <div class="form-group">
+                                    {{ form.violation_date.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    <div class="date-input-container">
+                                        {{ form.violation_date(class="form-control custom-datepicker text-center", type="text", dir="ltr", lang="en-US", autocomplete="off", placeholder="", id="violation_date", style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold; direction: ltr;") }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" style="font-family: 'Cairo', sans-serif; font-weight: normal;">{{ form.employee_signature.label }}</label>
+                                    <div class="d-flex">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="radio" name="employee_signature" id="signature_yes" value="yes" {% if form.employee_signature.data == 'yes' %}checked{% endif %}>
+                                            <label class="form-check-label" for="signature_yes" style="font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: bold;">
+                                                نعم
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="employee_signature" id="signature_no" value="no" {% if form.employee_signature.data == 'no' %}checked{% endif %}>
+                                            <label class="form-check-label" for="signature_no" style="font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: bold;">
+                                                لا
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form.notes.label(class="form-label", style="font-family: 'Cairo', sans-serif; font-weight: normal;") }}
+                                    {{ form.notes(class="form-control", rows=4, style="font-family: 'Calibri', sans-serif; font-size: 14px; font-weight: bold;") }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ form.submit(class="btn btn-primary", style="font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: bold;", value="حفظ التعديلات") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<!-- إضافة مكتبة Flatpickr لاختيار التاريخ -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/light.css">
+<style>
+    /* تنسيق حقول التاريخ */
+    .custom-datepicker {
+        text-align: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        direction: ltr !important;
+        unicode-bidi: isolate !important;
+        background-color: white;
+        color: #333;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        width: 100% !important;
+        min-width: 250px !important;
+    }
+
+    /* زيادة عرض عمود حقول التاريخ */
+    .date-field-column {
+        min-width: 220px !important;
+        width: auto !important;
+        flex: 0 0 300px !important;
+    }
+
+    /* تغيير لون الحدود عند التركيز */
+    .custom-datepicker:focus {
+        border-color:rgb(26, 35, 209);
+        box-shadow: 0 0 0 0.2rem rgba(18, 15, 200, 0.25);
+        outline: none;
+    }
+
+    /* تنسيق مكتبة Flatpickr */
+    .flatpickr-calendar {
+        background-color: white !important;
+        color: #333 !important;
+        border: 1px solidrgb(145, 175, 205) !important;
+        border-radius: 4px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .flatpickr-day {
+        color: #333 !important;
+        border-radius: 5px !important;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<!-- إضافة مكتبة Flatpickr لاختيار التاريخ -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة حقول التاريخ باستخدام مكتبة Flatpickr
+        // تعيين اللغة الإنجليزية للتاريخ
+        document.documentElement.lang = 'en-US';
+
+        // تهيئة مكتبة Flatpickr لحقول التاريخ
+        const datePickerOptions = {
+            dateFormat: "d/m/Y",
+            locale: "en",
+            disableMobile: true,
+            allowInput: true,
+            monthSelectorType: "dropdown",
+            position: "auto",
+            static: true,
+            showMonths: 1,
+            time_24hr: true,
+            weekNumbers: false,
+            wrap: false,
+            prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>',
+            nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
+            onChange: function(selectedDates, dateStr, instance) {
+                // تغيير لون الخلفية عند اختيار تاريخ
+                if (selectedDates.length > 0) {
+                    instance.input.classList.add('has-value');
+                } else {
+                    instance.input.classList.remove('has-value');
+                }
+            },
+            altInput: false,
+            altFormat: "d/m/Y",
+            clickOpens: true,
+            appendTo: document.body,
+            showMonths: 1,
+            static: true
+        };
+
+        // تطبيق مكتبة Flatpickr على حقل التاريخ
+        flatpickr(".custom-datepicker", datePickerOptions);
+    });
+</script>
+{% endblock %}

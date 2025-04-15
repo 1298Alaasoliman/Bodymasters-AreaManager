@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .card {
+        margin-bottom: 20px;
+        height: 100%;
+    }
+    
+    .card-header {
+        padding: 0.75rem 1.25rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .info-table {
+        width: 100%;
+    }
+    
+    .info-table th {
+        text-align: right;
+        padding: 8px;
+        font-weight: bold;
+        width: 40%;
+    }
+    
+    .info-table td {
+        text-align: right;
+        padding: 8px;
+        width: 60%;
+    }
+    
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .action-buttons {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4><i class="fas fa-calendar-check me-2"></i>سجل دوام: {{ employee.name }}</h4>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('employees.view', id=employee.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة
+        </a>
+        <a href="{{ url_for('schedules.employee_schedule', employee_id=employee.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit me-1"></i> تعديل جدول الدوام
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- بطاقة معلومات الموظف -->
+    <div class="col-md-4">
+        <div class="card shadow h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>معلومات الموظف</h5>
+            </div>
+            <div class="card-body">
+                <table class="info-table">
+                    <tr>
+                        <th>الاسم:</th>
+                        <td>{{ employee.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>الرقم الوظيفي:</th>
+                        <td>{{ employee.employee_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>المسمى الوظيفي:</th>
+                        <td>{{ employee.position }}</td>
+                    </tr>
+                    <tr>
+                        <th>النادي:</th>
+                        <td>{{ employee.club.name }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- بطاقة أوقات الدوام -->
+    <div class="col-md-4">
+        <div class="card shadow h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>أوقات الدوام</h5>
+            </div>
+            <div class="card-body">
+                <table class="info-table">
+                    <tr>
+                        <th>التاريخ:</th>
+                        <td>{{ work_record.date.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    
+                    {% if work_record.is_leave %}
+                    <tr>
+                        <th>الحالة:</th>
+                        <td><span class="badge bg-info">{{ work_record.leave_type or 'إجازة' }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <th>وقت الدخول:</th>
+                        <td>{{ work_record.time_in.strftime('%H:%M') if work_record.time_in else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>وقت الخروج:</th>
+                        <td>{{ work_record.time_out.strftime('%H:%M') if work_record.time_out else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>ساعات العمل:</th>
+                        <td>{{ work_record.hours_worked|round(1) if work_record.hours_worked else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>الحالة:</th>
+                        <td>
+                            {% if work_record.time_in and work_record.time_out %}
+                            <span class="badge bg-success">حاضر</span>
+                            {% elif work_record.time_in and not work_record.time_out %}
+                            <span class="badge bg-warning">لم يسجل خروج</span>
+                            {% else %}
+                            <span class="badge bg-danger">غائب</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- بطاقة أيام الدوام -->
+    <div class="col-md-4">
+        <div class="card shadow h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>أيام الدوام</h5>
+            </div>
+            <div class="card-body">
+                <table class="info-table">
+                    {% set schedule = employee.schedule.first() if employee.schedule.count() > 0 else None %}
+                    <tr>
+                        <th>السبت:</th>
+                        <td>{% if schedule and schedule.saturday %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>الأحد:</th>
+                        <td>{% if schedule and schedule.sunday %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>الاثنين:</th>
+                        <td>{% if schedule and schedule.monday %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>الثلاثاء:</th>
+                        <td>{% if schedule and schedule.tuesday %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>الأربعاء:</th>
+                        <td>{% if schedule and schedule.wednesday %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>الخميس:</th>
+                        <td>{% if schedule and schedule.thursday %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>الجمعة:</th>
+                        <td>{% if schedule and schedule.friday %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- بطاقة معلومات إضافية -->
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>معلومات إضافية</h5>
+                <a href="{{ url_for('employees.edit_work_record', record_id=work_record.id) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-edit me-1"></i> تعديل
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">ملاحظات:</label>
+                    <p>{{ work_record.notes or 'لا توجد ملاحظات' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">تاريخ الإنشاء:</label>
+                    <p>{{ work_record.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">آخر تحديث:</label>
+                    <p>{{ work_record.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_user.role == 'admin' or current_user.has_permission('employees', 'can_delete') %}
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-trash-alt me-2"></i>حذف سجل الدوام</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-danger">تحذير: سيؤدي حذف سجل الدوام إلى إزالته بشكل دائم.</p>
+                <form method="post" action="{{ url_for('employees.delete_work_record', record_id=work_record.id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذا السجل؟');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i> حذف السجل
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
